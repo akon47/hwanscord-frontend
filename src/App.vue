@@ -17,7 +17,7 @@ export default {
     AppContent,
     AppFooter
   }
-};
+}; 
 </script>
 
 <style></style>

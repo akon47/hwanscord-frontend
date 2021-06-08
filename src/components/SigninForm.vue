@@ -1,7 +1,7 @@
 <template>
   <div>
     <b-card
-      header="회원 가입"
+      header="로그인"
       style="max-width: 40rem; margin: auto; margin-top: 10vh;"
       class="mb-2"
       border-variant="info"
@@ -37,18 +37,13 @@
             required
           ></b-form-input>
         </b-form-group>
-        <b-button class="m-2" type="submit" variant="primary"
-          >회원 가입</b-button
-        >
+        <b-button class="m-2" type="submit" variant="primary">로그인</b-button>
       </b-form>
-      <p>{{ logMessage }}</p>
     </b-card>
   </div>
 </template>
 
 <script>
-import { signupUser } from "../api/auth";
-
 export default {
   data() {
     return {
@@ -58,14 +53,18 @@ export default {
   },
   methods: {
     async submitForm() {
-      const userData = {
-        username: this.username,
-        password: this.password
-      };
-      const { data } = await signupUser(userData);
-      console.log(data);
-      this.logMessage = `${data.username}님이 가입되었습니다`;
-      this.initForm();
+      try {
+        const userData = {
+          username: this.username,
+          password: this.password
+        };
+        await this.$store.dispatch("Signin", userData);
+        this.$router.push("/chat");
+      } catch (error) {
+        console.log(error);
+      } finally {
+        this.initForm();
+      }
     },
     initForm() {
       this.username = "";

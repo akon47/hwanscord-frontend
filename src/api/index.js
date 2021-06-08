@@ -1,11 +1,21 @@
-import axios from 'axios'
+import axios from "axios";
+import { setInterceptors } from "./common/interceptors";
 
-const instance = axios.create({
-    baseURL: 'https://kimhwan.kr/hwanscord-backend/api'
-});
+const apiUrl = 'https://kimhwan.kr/hwanscord-backend/';
 
-function registerUser(userData) {
-    return instance.post('/registerUser', userData);
+function createInstance() {
+  const instance = axios.create({
+    baseURL: apiUrl
+  });
+  return instance;
 }
 
-export { registerUser }
+function createInstanceWithAuth(url) {
+  const instance = axios.create({
+    baseURL: `${apiUrl}${url}`
+  });
+  return setInterceptors(instance);
+}
+
+export const instance = createInstance();
+export const chat = createInstanceWithAuth('chat');

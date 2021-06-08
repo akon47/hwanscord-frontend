@@ -7,15 +7,19 @@ export default new VueRouter({
   routes: [
     {
       path: '/',
-      redirect: '/login',
+      redirect: '/signin',
     },
     {
-      path: '/login',
-      component: () => import('../views/LoginPage.vue'),
+      path: '/signin',
+      component: () => import('../views/SigninPage.vue'),
     },
     {
       path: '/signup',
       component: () => import('../views/SignupPage.vue'),
+    },
+    {
+      path: '/chat',
+      component: () => import('../views/ChatPage.vue'),
     },
     {
       path: '*',
