@@ -1,7 +1,9 @@
 <template>
-  <div>
+  <div class="app">
     <app-header></app-header>
-    <app-content></app-content>
+    <div class="app-contents">
+      <app-content></app-content>
+    </div>
     <app-footer></app-footer>
   </div>
 </template>
@@ -20,4 +22,7 @@ export default {
 }; 
 </script>
 
-<style></style>
+<style>
+@import './css/common.css';
+@import './css/reset.css';
+</style>

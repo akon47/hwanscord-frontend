@@ -18,4 +18,4 @@ function createInstanceWithAuth(url) {
 }
 
 export const instance = createInstance();
-export const chat = createInstanceWithAuth('chat');
+export const messages = createInstanceWithAuth('messages');

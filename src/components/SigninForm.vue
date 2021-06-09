@@ -1,45 +1,26 @@
 <template>
-  <div>
-    <b-card
-      header="로그인"
-      style="max-width: 40rem; margin: auto; margin-top: 10vh;"
-      class="mb-2"
-      border-variant="info"
-      align="left"
-    >
-      <b-form @submit.prevent="submitForm">
-        <b-form-group
-          class="m-2"
-          id="input-group-1"
-          label="User name:"
-          label-for="username"
-        >
-          <b-form-input
-            id="username"
-            v-model="username"
-            type="text"
-            placeholder="Enter username"
-            required
-          ></b-form-input>
-        </b-form-group>
-
-        <b-form-group
-          class="m-2"
-          id="input-group-2"
-          label="User password:"
-          label-for="password"
-        >
-          <b-form-input
-            id="password"
-            v-model="password"
-            type="text"
-            placeholder="Enter password"
-            required
-          ></b-form-input>
-        </b-form-group>
-        <b-button class="m-2" type="submit" variant="primary">로그인</b-button>
-      </b-form>
-    </b-card>
+  <div class="contents">
+    <div class="form-wrapper form-wrapper-sm">
+      <form @submit.prevent="submitForm" class="form">
+        <div>
+          <label for="username">username: </label>
+          <input type="text" id="username" v-model="username" />
+          <!-- <p class="validation-text">
+            <span class="warning" v-if="!isUsernameValid && username">
+              Please enter an email address
+            </span>
+          </p> -->
+        </div>
+        <div>
+          <label for="password">password: </label>
+          <input type="text" id="password" v-model="password" />
+        </div>
+        <button type="submit" class="btn">
+          로그인
+        </button>
+        <p>{{ logMessage }}</p>
+      </form>
+    </div>
   </div>
 </template>
 
@@ -48,7 +29,8 @@ export default {
   data() {
     return {
       username: "",
-      password: ""
+      password: "",
+      logMessage: ""
     };
   },
   methods: {
@@ -59,7 +41,7 @@ export default {
           password: this.password
         };
         await this.$store.dispatch("Signin", userData);
-        this.$router.push("/chat");
+        this.$router.push("/main");
       } catch (error) {
         console.log(error);
       } finally {
@@ -74,4 +56,8 @@ export default {
 };
 </script>
 
-<style></style>
+<style>
+.btn {
+  color: white;
+}
+</style>

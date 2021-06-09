@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="h-100">
     <signup-form></signup-form>
   </div>
 </template>
@@ -11,5 +11,5 @@ export default {
 };
 </script>
 
-<style></style>
- 
+<style>
+</style>

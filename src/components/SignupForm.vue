@@ -1,48 +1,21 @@
 <template>
-  <div>
-    <b-card
-      header="회원 가입"
-      style="max-width: 40rem; margin: auto; margin-top: 10vh;"
-      class="mb-2"
-      border-variant="info"
-      align="left"
-    >
-      <b-form @submit.prevent="submitForm">
-        <b-form-group
-          class="m-2"
-          id="input-group-1"
-          label="User name:"
-          label-for="username"
-        >
-          <b-form-input
-            id="username"
-            v-model="username"
-            type="text"
-            placeholder="Enter username"
-            required
-          ></b-form-input>
-        </b-form-group>
-
-        <b-form-group
-          class="m-2"
-          id="input-group-2"
-          label="User password:"
-          label-for="password"
-        >
-          <b-form-input
-            id="password"
-            v-model="password"
-            type="text"
-            placeholder="Enter password"
-            required
-          ></b-form-input>
-        </b-form-group>
-        <b-button class="m-2" type="submit" variant="primary"
-          >회원 가입</b-button
-        >
-      </b-form>
-      <p>{{ logMessage }}</p>
-    </b-card>
+  <div class="contents">
+    <div class="form-wrapper form-wrapper-sm">
+      <form @submit.prevent="submitForm" class="form">
+        <div>
+          <label for="username">username: </label>
+          <input type="text" id="username" v-model="username" />
+        </div>
+        <div>
+          <label for="password">password: </label>
+          <input type="text" id="password" v-model="password" />
+        </div>
+        <button class="btn" type="submit">
+          회원 가입
+        </button>
+        <p>{{ logMessage }}</p>
+      </form>
+    </div>
   </div>
 </template>
 
@@ -53,7 +26,8 @@ export default {
   data() {
     return {
       username: "",
-      password: ""
+      password: "",
+      logMessage: ""
     };
   },
   methods: {
@@ -66,6 +40,7 @@ export default {
       console.log(data);
       this.logMessage = `${data.username}님이 가입되었습니다`;
       this.initForm();
+      this.$router.push("/");
     },
     initForm() {
       this.username = "";

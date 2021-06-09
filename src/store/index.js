@@ -13,7 +13,9 @@ Vue.use(Vuex);
 export default new Vuex.Store({
   state: {
     username: getUserFromLocalStorage() || "",
-    token: getTokenFromLocalStorage() || ""
+    token: getTokenFromLocalStorage() || "",
+    users: [],
+    chatdatas: [],
   },
   getters: {
     isLogin(state) {
@@ -39,6 +41,12 @@ export default new Vuex.Store({
       saveTokenToLocalStorage(data.token);
       saveUserToLocalStorage(data.user.username);
       return data;
-    }
+    },
+    Signout({ commit }) {
+      commit("setToken", "");
+      commit("clearUsername");
+      saveTokenToLocalStorage("");
+      saveUserToLocalStorage("");
+    },
   }
 });
