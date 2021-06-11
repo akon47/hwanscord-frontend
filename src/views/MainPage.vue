@@ -16,12 +16,12 @@ import { fetchMessages } from "../api/messages";
 export default {
   components: {
     UserList,
-    ChatRoom
+    ChatRoom,
   },
   data() {
     return {
       messages: [],
-      isLoading: false
+      isLoading: false,
     };
   },
   methods: {
@@ -30,11 +30,16 @@ export default {
       const { data } = await fetchMessages();
       this.messages = data.messages;
       this.isLoading = false;
-    }
+    },
   },
   created() {
     this.fetchData();
-  }
+  },
+  sockets: {
+    newMessageReceived(data) {
+      this.messages.push(data.data);
+    },
+  },
 };
 </script>
 

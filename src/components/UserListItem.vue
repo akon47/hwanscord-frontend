@@ -1,20 +1,19 @@
 <template>
-  <li>
-    <div>
-      {{ username }}
-    </div>
-  </li>
+  <div>
+    {{ userData.username }}
+  </div>
 </template>
 
 <script>
 export default {
   props: {
-    username: {
-      type: String,
-      require: true
-    }
-  }
+    userData: {
+      type: Object,
+      require: true,
+    },
+  },
 };
 </script>
 
-<style></style>
+<style>
+</style>
