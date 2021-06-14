@@ -5,8 +5,8 @@
     </div>
     <span>
       <div>
-        <span class="username">테스트</span>
-        <span class="date">{{ message.createdAt }}</span>
+        <span class="username">{{ message.createdBy.username }}</span>
+        <span class="date">{{ message.createdAt | formatDate }}</span>
         <span class="edited" v-if="isEdited">(수정됨)</span>
       </div>
       <div class="message">

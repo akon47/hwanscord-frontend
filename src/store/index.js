@@ -14,8 +14,6 @@ export default new Vuex.Store({
   state: {
     username: getUserFromLocalStorage() || "",
     token: getTokenFromLocalStorage() || "",
-    users: [],
-    chatdatas: [],
   },
   getters: {
     isLogin(state) {

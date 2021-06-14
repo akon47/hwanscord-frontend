@@ -1,7 +1,7 @@
 <template>
   <header>
     <div>
-      <router-link to="/" class="logo">
+      <router-link v-bind:to="logoLink" class="logo">
         HWANSCORD
         <span v-if="isUserLogin">by {{ $store.state.username }}</span>
       </router-link>
@@ -12,7 +12,6 @@
           로그아웃
         </a>
       </template>
-
       <template v-else>
         <router-link to="/signin">로그인</router-link>
         <router-link to="/signup">회원가입</router-link>
@@ -26,6 +25,9 @@ export default {
   computed: {
     isUserLogin() {
       return this.$store.getters.isLogin;
+    },
+    logoLink() {
+      return this.$store.getters.isLogin ? "/main" : "/";
     }
   },
   methods: {

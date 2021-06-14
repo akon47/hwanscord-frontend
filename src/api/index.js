@@ -19,3 +19,4 @@ function createInstanceWithAuth(url) {
 
 export const instance = createInstance();
 export const messages = createInstanceWithAuth('messages');
+export const users = createInstanceWithAuth('users');

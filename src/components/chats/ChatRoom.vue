@@ -21,11 +21,6 @@ export default {
     ChatTextBox,
     ChatListItem,
   },
-  sockets: {
-    connect() {
-      console.log("socket connected");
-    },
-  },
   props: {
     messages: {
       type: Array,

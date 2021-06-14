@@ -1,15 +1,17 @@
-import store from '../store/index'
-import VueSocketIO from 'vue-socket.io'
+import { io } from "socket.io-client";
+import store from "../store/index";
 
-const socketUrl = 'https://kimhwan.kr/';
+const socketUrl = "wss://kimhwan.kr/";
 
-export default new VueSocketIO({
-    debug: true,
-    connection: socketUrl,
-    vuex: {
-        store,
-        actionPrefix: 'SOCKET_',
-        mutationPrefix: 'SOCKET_'
-    },
-    options: { path: "/hwanscord-backend/socket.io/" }
+const socket = io(socketUrl, {
+  path: "/hwanscord-backend/socket.io/",
+  withCredentials: true,
+  auth: cb => {
+    cb({
+      token: store.state.token
+    });
+  },
+  autoConnect: true
 });
+
+export default socket;

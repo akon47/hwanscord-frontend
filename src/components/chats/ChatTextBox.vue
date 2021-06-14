@@ -24,7 +24,7 @@ export default {
       this.clearMessage();
     },
     clearMessage() {
-        this.message = '';
+      this.message = "";
     }
   }
 };

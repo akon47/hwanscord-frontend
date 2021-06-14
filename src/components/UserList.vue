@@ -13,12 +13,12 @@ import UserListItem from "./UserListItem.vue";
 
 export default {
   components: {
-    UserListItem,
+    UserListItem
   },
-  computed: {
-    users() {
-      return this.$store.users;
-    },
+  props: {
+    users: {
+      type: Array
+    }
   },
 };
 </script>

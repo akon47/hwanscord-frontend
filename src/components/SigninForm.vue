@@ -1,10 +1,15 @@
 <template>
   <div class="contents">
     <div class="form-wrapper form-wrapper-sm">
+      <h2>로그인</h2>
       <form @submit.prevent="submitForm" class="form">
         <div>
-          <label for="username">username: </label>
-          <input type="text" id="username" v-model="username" />
+          <input
+            type="text"
+            id="username"
+            v-model="username"
+            placeholder="Username"
+          />
           <!-- <p class="validation-text">
             <span class="warning" v-if="!isUsernameValid && username">
               Please enter an email address
@@ -12,10 +17,19 @@
           </p> -->
         </div>
         <div>
-          <label for="password">password: </label>
-          <input type="text" id="password" v-model="password" />
+          <input
+            type="text"
+            id="password"
+            v-model="password"
+            placeholder="Password"
+            autocomplete="off"
+          />
         </div>
-        <button type="submit" class="btn">
+        <button
+          v-bind:disabled="!isUsernameValid || !isPasswordValid"
+          type="submit"
+          class="btn"
+        >
           로그인
         </button>
         <p>{{ logMessage }}</p>
@@ -33,6 +47,14 @@ export default {
       logMessage: ""
     };
   },
+  computed: {
+    isUsernameValid() {
+      return this.username.length > 0;
+    },
+    isPasswordValid() {
+      return this.password.length > 0;
+    }
+  },
   methods: {
     async submitForm() {
       try {
@@ -44,6 +66,7 @@ export default {
         this.$router.push("/main");
       } catch (error) {
         console.log(error);
+        this.logMessage = error.response.data;
       } finally {
         this.initForm();
       }
