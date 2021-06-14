@@ -7,6 +7,7 @@ import {
   saveTokenToLocalStorage,
   saveUserToLocalStorage
 } from "../utils/storage";
+import socket from "../socket/index";
 
 Vue.use(Vuex);
 
@@ -29,6 +30,9 @@ export default new Vuex.Store({
     },
     setToken(state, token) {
       state.token = token;
+      if(socket.disconnected) {
+        socket.connect();
+      }
     }
   },
   actions: {

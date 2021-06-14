@@ -16,7 +16,5 @@ export default {
   align-items: center;
   padding: 10px 20px;
   background-color: #454545;
-  z-index: 2;
-  box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.05);
 }
 </style>

@@ -32,6 +32,7 @@ export default {
   },
   methods: {
     logoutUser() {
+      this.$socket.client.disconnect();
       this.$store.dispatch("Signout");
       this.$router.push("/");
     }
@@ -48,9 +49,11 @@ header {
   justify-content: space-between;
   align-items: center;
   padding: 10px 20px;
-  background-color: #454545;
+  background-color: #36393f;
   z-index: 2;
-  box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.05);
+  height: 60px;
+  filter: drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.6));
+  border-bottom: 1px solid black ;
 }
 a {
   color: #dedede;

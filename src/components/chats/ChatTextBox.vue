@@ -42,7 +42,7 @@ export default {
   padding-top: 5px;
   padding-bottom: 5px;
   margin: 10px;
-  background-color: #656565;
+  background-color: #40444b;
 }
 .chatinput input {
   width: calc(100% - 120px - 10px);

@@ -1,12 +1,11 @@
 <template>
-
   <div class="root" v-bind:style="{ opacity: `${opacity}` }">
     <div class="avatar">
       <img />
     </div>
-    <span>
+    <span class="userinfo">
       <div>
-        <span class="username">{{ userData.username }}</span>
+        <span>{{ userData.username }}</span>
       </div>
       <div class="status">
         <p v-if="isOnline">온라인</p>
@@ -43,8 +42,18 @@ export default {
 }
 
 .root {
-  width: 100%;
+  width: calc(100% - 10px);
   padding: 5px;
+  padding-bottom: 10px;
+  margin: 5px;
+  cursor: default;
+  background-color: transparent;
+  border-radius: 5px;
+}
+
+.root:hover {
+  background-color: #565656;
+  border-radius: 5px;
 }
 
 .avatar {
@@ -52,33 +61,16 @@ export default {
   width: 45px;
   height: 45px;
   border-radius: 50%;
-  background-color: purple;
-  margin-top: 10px;
+  background-color: #7289da;
+  
   margin-left: 10px;
   margin-right: 15px;
+  cursor: pointer;
 }
 
-.message {
+.userinfo {
   color: white;
   font-size: 12pt;
   font-weight: bold;
-}
-
-.username {
-  color: white;
-  font-size: 12pt;
-  font-weight: 700;
-}
-
-.date {
-  color: gray;
-  font-size: 10pt;
-  margin-left: 5px;
-}
-
-.edited {
-  color: gray;
-  font-size: 10pt;
-  margin-left: 5px;
 }
 </style>

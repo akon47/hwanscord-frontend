@@ -10,11 +10,6 @@
             v-model="username"
             placeholder="Username"
           />
-          <!-- <p class="validation-text">
-            <span class="warning" v-if="!isUsernameValid && username">
-              Please enter an email address
-            </span>
-          </p> -->
         </div>
         <div>
           <input
@@ -44,7 +39,7 @@ export default {
     return {
       username: "",
       password: "",
-      logMessage: ""
+      logMessage: "",
     };
   },
   computed: {
@@ -53,14 +48,14 @@ export default {
     },
     isPasswordValid() {
       return this.password.length > 0;
-    }
+    },
   },
   methods: {
     async submitForm() {
       try {
         const userData = {
           username: this.username,
-          password: this.password
+          password: this.password,
         };
         await this.$store.dispatch("Signin", userData);
         this.$router.push("/main");
@@ -74,8 +69,8 @@ export default {
     initForm() {
       this.username = "";
       this.password = "";
-    }
-  }
+    },
+  },
 };
 </script>
 

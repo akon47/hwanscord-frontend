@@ -12,6 +12,21 @@ Vue.config.productionTip = false;
 Vue.use(VueSocketIOExt, socket);
 
 new Vue({
+  sockets:{
+    connect() {
+      console.log("socket connected");
+    },
+    disconnect() {
+      console.log("socket closed");
+    },
+    connect_error() {
+      console.log("connect_error");
+    },
+    unauthorized() {
+      console.log("unauthorized");
+      this.$socket.client.disconnect();
+    }
+  },
   render: h => h(App),
   router,
   store

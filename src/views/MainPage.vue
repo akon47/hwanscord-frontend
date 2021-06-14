@@ -6,7 +6,20 @@
         <chat-room v-bind:messages="messages"></chat-room>
       </div>
       <div class="user-area">
-        <user-list v-bind:users="users"></user-list>
+        <div id="user-list">
+          <user-list v-bind:users="users"></user-list>
+        </div>
+        <div id="current-info">
+          <div
+            id="avatar"
+            v-bind:style="{ backgroundImage: `url(${currentAvatarUrl})` }"
+          >
+            아바타<br />변경
+          </div>
+          <div id="userinfo">
+            {{ $store.state.username }}
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -45,13 +58,17 @@ export default {
       this.isLoading = false;
     },
     updateUser(data) {
-      console.log(data)
-      const index = this.users.findIndex((element) => element._id === data.userid);
+      const index = this.users.findIndex((elem) => elem._id === data.userid);
       if (index >= 0) {
         const user = this.users[index];
         user.connections = data.connections;
         this.$set(this.users, index, user);
       }
+    },
+  },
+  computed: {
+    currentAvatarUrl() {
+      return "https://cdn.discordapp.com/avatars/267273244967436288/cc74d9580dcfa1e4d6904e2489e62778.png?size=128";
     },
   },
   watch: {
@@ -68,12 +85,6 @@ export default {
     this.fetchData();
   },
   sockets: {
-    connect() {
-      console.log("socket connected");
-    },
-    connect_error() {
-      console.log("connect_error");
-    },
     newMessageReceived(data) {
       this.messages.push(data);
     },
@@ -88,26 +99,61 @@ export default {
 </script>
 
 <style scoped>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.5s;
-}
-.fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
-  opacity: 0;
-}
-
 div.message-area {
   width: calc(100% - 250px);
   height: 100%;
   float: left;
   box-sizing: border-box;
-  background: #363636;
+  background: #36393f;
 }
 div.user-area {
   width: 250px;
   height: 100%;
   float: right;
   box-sizing: border-box;
-  background: #313131;
+  background: #2f3136;
+}
+
+#user-list {
+  height: calc(100% - 80px);
+}
+
+#current-info {
+  display: flex;
+  height: 70px;
+  background-color: #292b2f;
+}
+
+#avatar {
+  float: left;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #7289da;
+  background-position: 50%;
+  background-size: cover;
+  background-repeat: no-repeat;
+  color: transparent;
+
+  display: flex;
+  margin: 10px;
+  margin-right: 15px;
+  cursor: pointer;
+  font-size: 8pt;
+  text-align: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+#avatar:hover {
+  color: white;
+}
+
+#userinfo {
+  color: white;
+  font-size: 14pt;
+  font-weight: bold;
+  vertical-align: middle;
+  line-height: 70px;
 }
 </style>

@@ -26,14 +26,26 @@ export default {
       type: Array,
     },
   },
+  methods: {
+    onResize() {
+      this.chatScrollToBottom(false);
+    },
+    chatScrollToBottom(smooth) {
+      let chatarea = this.$refs.chatarea;
+      chatarea.scrollTo({ top: chatarea.scrollHeight, behavior: smooth ? "smooth" : "auto" });
+      console.log("chatScrollToBottom");
+    },
+  },
   watch: {
     messages() {
-      this.$nextTick(() => {
-        let chatarea = this.$refs.chatarea;
-        chatarea.scrollTo({ top: chatarea.scrollHeight, behavior: "smooth" });
-        console.log("scrollTo");
-      });
+      this.$nextTick(() => this.chatScrollToBottom(true));
     },
+  },
+  mounted() {
+    window.addEventListener("resize", this.onResize);
+  },
+  beforeDestroy() {
+    window.removeEventListener("resize", this.onResize);
   },
 };
 </script>

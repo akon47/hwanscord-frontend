@@ -3,13 +3,13 @@
     <div class="avatar">
       <img />
     </div>
-    <span>
+    <span class="message">
       <div>
         <span class="username">{{ message.createdBy.username }}</span>
         <span class="date">{{ message.createdAt | formatDate }}</span>
         <span class="edited" v-if="isEdited">(수정됨)</span>
       </div>
-      <div class="message">
+      <div style="cursor: auto">
         {{ message.message }}
       </div>
     </span>
@@ -33,8 +33,17 @@ export default {
 
 <style scoped>
 .root {
-  width: 100%;
+  width: calc(100% - 0px);
   padding: 5px;
+  padding-bottom: 10px;
+  margin: 0px;
+  cursor: default;
+  background-color: transparent;
+}
+
+.root:hover {
+  background-color: #32353b;
+  border-radius: 0px;
 }
 
 .avatar {
@@ -42,22 +51,28 @@ export default {
   width: 45px;
   height: 45px;
   border-radius: 50%;
-  background-color: purple;
-  margin-top: 10px;
+  background-color: #7289da;
+  margin-top: 1px;
   margin-left: 10px;
   margin-right: 15px;
+  cursor: pointer;
 }
 
 .message {
   color: white;
   font-size: 12pt;
-  font-weight: 500;
+  font-weight: normal;
 }
 
 .username {
   color: white;
   font-size: 12pt;
-  font-weight: 700;
+  font-weight: bold;
+}
+
+.username:hover {
+  cursor: pointer;
+  text-decoration: underline;
 }
 
 .date {
