@@ -2,9 +2,7 @@
   <div class="chatinput">
     <form @submit.prevent="submitForm">
       <input type="text" id="message" v-model="message" autocomplete="off" />
-      <button type="submit" class="btn">
-        보내기
-      </button>
+      <button type="submit" class="btn">보내기</button>
     </form>
   </div>
 </template>
@@ -15,18 +13,20 @@ import { sendMessage } from "../../api/messages";
 export default {
   data() {
     return {
-      message: ""
+      message: "",
     };
   },
   methods: {
     async submitForm() {
-      await sendMessage(this.message);
-      this.clearMessage();
+      if (this.message !== "") {
+        await sendMessage(this.message);
+        this.clearMessage();
+      }
     },
     clearMessage() {
       this.message = "";
-    }
-  }
+    },
+  },
 };
 </script>
 

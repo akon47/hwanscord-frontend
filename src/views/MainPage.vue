@@ -3,7 +3,7 @@
     <loading-spinner v-if="isLoading"></loading-spinner>
     <div v-else class="h-100">
       <div class="message-area">
-        <chat-room v-bind:messages="messages"></chat-room>
+        <chat-room v-bind:messages="messages" v-bind:users="users"></chat-room>
       </div>
       <div class="user-area">
         <div id="user-list">
@@ -12,9 +12,30 @@
         <div id="current-info">
           <div
             id="avatar"
-            v-bind:style="{ backgroundImage: `url(${currentAvatarUrl})` }"
+            v-bind:style="{ backgroundImage: `url(${avatarUrl})` }"
           >
-            아바타<br />변경
+            <div style="position: relative; height: 100%; width: 100%">
+              <div id="avatar-change-message">
+                <label for="avatar-file" style="cursor: pointer"
+                  >아바타<br />변경</label
+                >
+              </div>
+              <input
+                id="avatar-file"
+                type="file"
+                accept=".jpg,.jpeg,.png,.gif"
+                style="
+                  position: absolute;
+                  top: 0px;
+                  left: 0px;
+                  width: 100%;
+                  height: 100%;
+                  opacity: 0;
+                  cursor: pointer;
+                "
+                @change="handleFileChange"
+              />
+            </div>
           </div>
           <div id="userinfo">
             {{ $store.state.username }}
@@ -31,6 +52,8 @@ import UserList from "../components/UserList.vue";
 import LoadingSpinner from "../components/common/LoadingSpinner.vue";
 import { fetchMessages } from "../api/messages";
 import { fetchUsers } from "../api/users";
+import { uploadAvatar } from "../api/avatar";
+import { apiUrl } from "../api/index";
 
 export default {
   components: {
@@ -45,6 +68,18 @@ export default {
       isLoading: false,
     };
   },
+  computed: {
+    avatarUrl() {
+      try {
+        const user = this.users.find(
+          (elem) => elem.username === this.$store.state.username
+        );
+        return `${apiUrl}${user.avatar.filepath}`;
+      } catch (error) {
+        return null;
+      }
+    },
+  },
   methods: {
     async fetchData() {
       this.isLoading = true;
@@ -57,7 +92,7 @@ export default {
 
       this.isLoading = false;
     },
-    updateUser(data) {
+    updateUserConnection(data) {
       const index = this.users.findIndex((elem) => elem._id === data.userid);
       if (index >= 0) {
         const user = this.users[index];
@@ -65,10 +100,17 @@ export default {
         this.$set(this.users, index, user);
       }
     },
-  },
-  computed: {
-    currentAvatarUrl() {
-      return "https://cdn.discordapp.com/avatars/267273244967436288/cc74d9580dcfa1e4d6904e2489e62778.png?size=128";
+    updateUserAvatar(data) {
+      const index = this.users.findIndex((elem) => elem._id === data.userid);
+      if (index >= 0) {
+        const user = this.users[index];
+        user.avatar = data.avatar;
+        this.$set(this.users, index, user);
+      }
+    },
+    async handleFileChange(e) {
+      const file = e.target.files[0];
+      await uploadAvatar(file);
     },
   },
   watch: {
@@ -88,11 +130,14 @@ export default {
     newMessageReceived(data) {
       this.messages.push(data);
     },
+    userAvatarChanged(data) {
+      this.updateUserAvatar(data);
+    },
     userConnected(data) {
-      this.updateUser(data);
+      this.updateUserConnection(data);
     },
     userDisconnected(data) {
-      this.updateUser(data);
+      this.updateUserConnection(data);
     },
   },
 };
@@ -145,8 +190,27 @@ div.user-area {
   flex-direction: column;
 }
 
-#avatar:hover {
+#avatar-change-message {
+  display: flex;
+  border-radius: 50%;
+  position: absolute;
+  justify-content: center;
+  align-items: center;
+  line-height: 12px;
+  white-space: pre;
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+}
+
+#avatar-change-message:hover {
   color: white;
+  background-color: #00000060;
 }
 
 #userinfo {

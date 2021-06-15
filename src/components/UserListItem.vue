@@ -1,8 +1,8 @@
 <template>
   <div class="root" v-bind:style="{ opacity: `${opacity}` }">
-    <div class="avatar">
-      <img />
-    </div>
+    <span>
+      <avatar v-bind:userData="userData"></avatar>
+    </span>
     <span class="userinfo">
       <div>
         <span>{{ userData.username }}</span>
@@ -16,7 +16,9 @@
 </template>
 
 <script>
+import Avatar from './Avatar.vue';
 export default {
+  components: { Avatar },
   props: {
     userData: {
       type: Object,

@@ -5,6 +5,8 @@
         v-for="message in messages"
         v-bind:key="message._id"
         v-bind:message="message"
+        v-bind:users="users"
+        @imgload="chatScrollToBottom(true)"
       ></chat-list-item>
     </div>
     <div class="chatinputbox">
@@ -25,6 +27,9 @@ export default {
     messages: {
       type: Array,
     },
+    users: {
+      type: Array,
+    },
   },
   methods: {
     onResize() {
@@ -32,8 +37,10 @@ export default {
     },
     chatScrollToBottom(smooth) {
       let chatarea = this.$refs.chatarea;
-      chatarea.scrollTo({ top: chatarea.scrollHeight, behavior: smooth ? "smooth" : "auto" });
-      console.log("chatScrollToBottom");
+      chatarea.scrollTo({
+        top: chatarea.scrollHeight,
+        behavior: smooth ? "smooth" : "auto",
+      });
     },
   },
   watch: {
