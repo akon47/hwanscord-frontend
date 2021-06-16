@@ -83,14 +83,21 @@ export default {
   methods: {
     async fetchData() {
       this.isLoading = true;
+      try {
+        const messageData = await fetchMessages();
+        this.messages = messageData.data.messages;
 
-      const messageData = await fetchMessages();
-      this.messages = messageData.data.messages;
-
-      const userData = await fetchUsers();
-      this.users = userData.data.users;
-
-      this.isLoading = false;
+        const userData = await fetchUsers();
+        this.users = userData.data.users;
+      } catch (error) {
+        if (this.$socket.client.connected) {
+          this.$socket.client.disconnect();
+        }
+        this.$store.dispatch("Signout");
+        this.$router.push("/");
+      } finally {
+        this.isLoading = false;
+      }
     },
     updateUserConnection(data) {
       const index = this.users.findIndex((elem) => elem._id === data.userid);
@@ -129,6 +136,22 @@ export default {
   sockets: {
     newMessageReceived(data) {
       this.messages.push(data);
+    },
+    messageDeleted(data) {
+      const index = this.messages.findIndex(
+        (elem) => elem._id === data.messageid
+      );
+      if (index >= 0) {
+        this.messages.splice(index, 1);
+      }
+    },
+    messageModified(data) {
+      const index = this.messages.findIndex(
+        (elem) => elem._id === data._id
+      );
+      if (index >= 0) {
+        this.$set(this.messages, index, data);
+      }
     },
     userAvatarChanged(data) {
       this.updateUserAvatar(data);
