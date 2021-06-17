@@ -1,6 +1,6 @@
 import Vue from "vue";
 import Vuex from "vuex";
-import { signinUser } from "../api/auth";
+import { signinUser, signupUser } from "../api/auth";
 import {
   getTokenFromLocalStorage,
   getUserFromLocalStorage,
@@ -42,6 +42,14 @@ export default new Vuex.Store({
       commit("setUsername", data.user.username);
       saveTokenToLocalStorage(data.token);
       saveUserToLocalStorage(data.user.username);
+      return data;
+    },
+    async Signup({ commit }, userData) {
+      const { data } = await signupUser(userData);
+      commit("setToken", data.token);
+      commit("setUsername", data.username);
+      saveTokenToLocalStorage(data.token);
+      saveUserToLocalStorage(data.username);
       return data;
     },
     Signout({ commit }) {

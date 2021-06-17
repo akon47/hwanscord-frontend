@@ -30,8 +30,6 @@
 </template>
 
 <script>
-import { signupUser } from "../api/auth";
-
 export default {
   data() {
     return {
@@ -58,12 +56,11 @@ export default {
           username: this.username,
           password: this.password
         };
-        const { data } = await signupUser(userData);
-        console.log(data);
-        this.logMessage = `${data.username}님이 가입되었습니다`;
+        await this.$store.dispatch("Signup", userData);
         this.initForm();
-        this.$router.push("/");
+        this.$router.push("/main");
       } catch (error) {
+        console.log(error);
         this.logMessage = error.response.data;
       } finally {
         this.isLoading = false;

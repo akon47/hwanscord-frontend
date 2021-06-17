@@ -2,10 +2,10 @@
   <div class="h-100">
     <loading-spinner v-if="isLoading"></loading-spinner>
     <div v-else class="h-100">
-      <div class="message-area">
+      <div class="message-area" :class="{ mobile: $isMobile() }">
         <chat-room v-bind:messages="messages" v-bind:users="users"></chat-room>
       </div>
-      <div class="user-area">
+      <div class="user-area" v-if="!$isMobile()">
         <div id="user-list">
           <user-list v-bind:users="users"></user-list>
         </div>
@@ -146,9 +146,7 @@ export default {
       }
     },
     messageModified(data) {
-      const index = this.messages.findIndex(
-        (elem) => elem._id === data._id
-      );
+      const index = this.messages.findIndex((elem) => elem._id === data._id);
       if (index >= 0) {
         this.$set(this.messages, index, data);
       }
@@ -174,6 +172,11 @@ div.message-area {
   box-sizing: border-box;
   background: #36393f;
 }
+
+div.mobile {
+  width: 100%;
+}
+
 div.user-area {
   width: 250px;
   height: 100%;

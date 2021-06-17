@@ -64,9 +64,10 @@ export default {
 
 <style scoped>
 .chatarea {
-  height: calc(100% - 68px);
+  height: calc(100% - 78px);
   overflow-y: auto;
   overflow-x: hidden;
+  padding-bottom: 10px;
 }
 
 .chatinputbox {

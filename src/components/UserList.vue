@@ -20,12 +20,6 @@
       v-bind:key="user._id"
       v-bind:userData="user"
     ></user-list-item>
-
-    <!-- <user-list-item
-      v-for="user in users"
-      v-bind:key="user._id"
-      v-bind:userData="user"
-    ></user-list-item> -->
   </div>
 </template>
 
@@ -62,22 +56,25 @@ export default {
 }
 
 .userlist {
+  height: 100%;
   user-select: none;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .userlist::-webkit-scrollbar {
-  width: 18px;
+  width: 10px;
 }
 .userlist::-webkit-scrollbar-thumb {
   background-color: #212121;
   border-radius: 10px;
   background-clip: padding-box;
-  border: 5px solid transparent;
+  border: 2px solid transparent;
 }
 .userlist::-webkit-scrollbar-track {
   background-color: #00000030;
   border-radius: 10px;
   background-clip: padding-box;
-  border: 5px solid transparent;
+  border: 2px solid transparent;
 }
 </style>

@@ -25,7 +25,12 @@
           <span v-else-if="isImage || isImageLoading">
             <a :href="message.message" target="_blank">
               <span v-if="isImageLoading">{{ message.message }}</span>
-              <img :src="message.message" @load="imgLoad" @error="imgError" />
+              <img
+                :src="message.message"
+                @load="imgLoad"
+                @error="imgError"
+                :class="{ mobile: $isMobile() }"
+              />
             </a>
           </span>
           <span v-else
@@ -33,6 +38,7 @@
               message.message
             }}</a></span
           >
+          <span class="edited" v-if="isEdited">(수정됨)</span>
         </div>
       </span>
 
@@ -258,6 +264,10 @@ img {
   max-height: 300px;
   margin-top: 10px;
   border-radius: 5px;
+}
+
+.mobile {
+  max-width: calc(100vw - 20px);
 }
 
 .root {

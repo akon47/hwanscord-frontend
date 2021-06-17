@@ -4,9 +4,11 @@ import router from "./routes/index";
 import store from "./store/index";
 import VueSocketIOExt from "vue-socket.io-extended";
 import socket from "./socket/index";
+import VueMobileDetection from "vue-mobile-detection";
 
 Vue.config.productionTip = false;
 
+Vue.use(VueMobileDetection);
 Vue.use(VueSocketIOExt, socket);
 
 new Vue({
