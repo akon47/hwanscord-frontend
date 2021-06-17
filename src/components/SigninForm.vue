@@ -1,22 +1,18 @@
 <template>
   <div class="contents">
     <div class="form-wrapper form-wrapper-sm">
-      <h2>로그인</h2>
+      <h1>로그인</h1>
       <form @submit.prevent="submitForm" class="form">
         <div>
-          <input
-            type="text"
-            id="username"
-            v-model="username"
-            placeholder="Username"
-          />
+          <label for="username">유저이름 또는 별명</label>
+          <input type="text" id="username" v-model="username" />
         </div>
         <div>
+          <label for="password">비밀번호</label>
           <input
             type="text"
             id="password"
             v-model="password"
-            placeholder="Password"
             autocomplete="off"
           />
         </div>
@@ -39,7 +35,7 @@ export default {
     return {
       username: "",
       password: "",
-      logMessage: "",
+      logMessage: ""
     };
   },
   computed: {
@@ -48,14 +44,14 @@ export default {
     },
     isPasswordValid() {
       return this.password.length > 0;
-    },
+    }
   },
   methods: {
     async submitForm() {
       try {
         const userData = {
           username: this.username,
-          password: this.password,
+          password: this.password
         };
         await this.$store.dispatch("Signin", userData);
         this.$router.push("/main");
@@ -69,8 +65,8 @@ export default {
     initForm() {
       this.username = "";
       this.password = "";
-    },
-  },
+    }
+  }
 };
 </script>
 

@@ -1,27 +1,27 @@
 <template>
   <div class="contents">
     <div class="form-wrapper form-wrapper-sm">
-      <h2>회원 가입</h2>
+      <h1>회원가입</h1>
       <form @submit.prevent="submitForm" class="form">
         <div>
-          <input
-            type="text"
-            id="username"
-            v-model="username"
-            placeholder="Username"
-          />
+          <label for="username">유저이름 또는 별명</label>
+          <input type="text" id="username" v-model="username" />
         </div>
         <div>
+          <label for="password">비밀번호</label>
           <input
             type="text"
             id="password"
             v-model="password"
-            placeholder="Password"
             autocomplete="off"
           />
         </div>
-        <button v-bind:disabled="!isUsernameValid || !isPasswordValid || isLoading" class="btn" type="submit">
-          회원 가입
+        <button
+          v-bind:disabled="!isUsernameValid || !isPasswordValid || isLoading"
+          class="btn"
+          type="submit"
+        >
+          회원가입
         </button>
         <p>{{ logMessage }}</p>
       </form>
@@ -36,7 +36,7 @@ export default {
       username: "",
       password: "",
       logMessage: "",
-      isLoading: false,
+      isLoading: false
     };
   },
   computed: {
