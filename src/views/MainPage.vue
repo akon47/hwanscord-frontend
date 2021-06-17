@@ -190,6 +190,7 @@ div.user-area {
   display: flex;
   height: 70px;
   background-color: #292b2f;
+  user-select: none;
 }
 
 #avatar {

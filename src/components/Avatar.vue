@@ -32,8 +32,8 @@ export default {
 <style scoped>
 .avatar {
   float: left;
-  width: 45px;
-  height: 45px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   background-color: transparent;
   background-position: 50%;
@@ -42,10 +42,8 @@ export default {
   color: transparent;
 
   display: flex;
-  margin-right: 15px;
   cursor: pointer;
   font-size: 8pt;
-  text-align: center;
   justify-content: center;
   flex-direction: column;
 }

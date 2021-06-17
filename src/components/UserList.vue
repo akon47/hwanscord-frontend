@@ -61,6 +61,10 @@ export default {
   margin: 10px;
 }
 
+.userlist {
+  user-select: none;
+}
+
 .userlist::-webkit-scrollbar {
   width: 18px;
 }

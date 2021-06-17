@@ -1,15 +1,17 @@
 <template>
-  <div v-show="value">
-    <div class="context-menu-bg" @click="hide" />
-    <div class="context-menu-root">
-      <context-menu-item
-        v-for="(item, index) in menuItems"
-        v-bind:key="index"
-        v-bind:header="item.header"
-        @click="menuClick(item.callback)"
-      />
+  <transition name="slide-fade">
+    <div v-show="value">
+      <div class="context-menu-bg" @click="hide" />
+      <div class="context-menu-root">
+        <context-menu-item
+          v-for="(item, index) in menuItems"
+          v-bind:key="index"
+          v-bind:header="item.header"
+          @click="menuClick(item.callback)"
+        />
+      </div>
     </div>
-  </div>
+  </transition>
 </template>
 
 <script>
@@ -29,14 +31,26 @@ export default {
       this.$emit("input", false);
     },
     menuClick(callback) {
-        callback();
-        this.hide();
-    }
+      callback();
+      this.hide();
+    },
   },
 };
 </script>
 
 <style scoped>
+.slide-fade-enter-active {
+  transition: all 0.2s ease;
+}
+.slide-fade-leave-active {
+  transition: all 0.1s cubic-bezier(1, 0.5, 0.8, 1);
+}
+.slide-fade-enter, .slide-fade-leave-to
+/* .slide-fade-leave-active below version 2.1.8 */ {
+  transform: translateX(10px);
+  opacity: 0;
+}
+
 .context-menu-bg {
   position: fixed;
   left: 0;

@@ -2,26 +2,31 @@
   <div class="h-100">
     <div class="chatarea" ref="chatarea">
       <chat-list-item
-        v-for="message in messages"
-        v-bind:key="message._id"
-        v-bind:message="message"
-        v-bind:users="users"
+        v-for="(message, index) in messages"
+        :key="message._id"
+        :message="message"
+        :messages="messages"
+        :index="index"
+        :users="users"
         @imgload="chatScrollToBottom(true)"
       ></chat-list-item>
     </div>
     <div class="chatinputbox">
       <chat-text-box></chat-text-box>
     </div>
+    <!-- <file-drag-drop></file-drag-drop> -->
   </div>
 </template>
 
 <script>
+// import FileDragDrop from '../common/FileDragDrop.vue';
 import ChatListItem from "./ChatListItem.vue";
 import ChatTextBox from "./ChatTextBox.vue";
 export default {
   components: {
     ChatTextBox,
     ChatListItem,
+    // FileDragDrop,
   },
   props: {
     messages: {
@@ -61,6 +66,7 @@ export default {
 .chatarea {
   height: calc(100% - 68px);
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .chatinputbox {
