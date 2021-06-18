@@ -1,5 +1,6 @@
 <template>
   <div class="h-100">
+    <star-sky v-if="$route.path !== '/main'"></star-sky>
     <transition name="component-fade" mode="out-in">
       <router-view></router-view>
     </transition>
@@ -7,7 +8,10 @@
 </template>
 
 <script>
-export default {};
+import StarSky from "../background/StarSky.vue";
+export default {
+  components: { StarSky },
+};
 </script>
 
 <style scoped>
@@ -18,7 +22,8 @@ export default {};
 .component-fade-leave-active {
   transition: all 0.15s ease;
 }
-.component-fade-enter, .component-fade-leave-to {
+.component-fade-enter,
+.component-fade-leave-to {
   opacity: 0;
   transform: translateY(-50px);
 }

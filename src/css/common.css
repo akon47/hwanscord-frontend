@@ -64,6 +64,7 @@ a:hover {
   box-shadow: 0 20px 20px rgba(0, 0, 0, 0.08);
   border-radius: 3px;
   padding: 30px 30px;
+  border: 1px solid rgb(43, 45, 49);
 }
 
 .form-wrapper-sm .page-header {

@@ -1,7 +1,7 @@
 <template>
   <div class="root" v-bind:style="{ opacity: `${opacity}` }">
     <span>
-      <avatar v-bind:userData="userData"></avatar>
+      <avatar v-bind:userData="userData" @click="avatarClick"></avatar>
     </span>
     <span class="userinfo">
       <div>
@@ -16,7 +16,7 @@
 </template>
 
 <script>
-import Avatar from './Avatar.vue';
+import Avatar from "./Avatar.vue";
 export default {
   components: { Avatar },
   props: {
@@ -31,7 +31,12 @@ export default {
     },
     opacity() {
       return this.userData.connections > 0 ? 1.0 : 0.5;
-    }
+    },
+  },
+  methods: {
+    avatarClick() {
+      this.$emit("avatarClick", this.userData);
+    },
   },
 };
 </script>
@@ -64,7 +69,7 @@ export default {
   height: 45px;
   border-radius: 50%;
   background-color: #7289da;
-  
+
   margin-left: 10px;
   margin-right: 15px;
   cursor: pointer;

@@ -3,8 +3,14 @@
     v-if="avatarUrl"
     class="avatar"
     v-bind:style="{ backgroundImage: `url(${avatarUrl})` }"
+    @click="$emit('click')"
   ></div>
-  <div v-else class="avatar" style="background-color: #7289da"></div>
+  <div
+    v-else
+    class="avatar"
+    style="background-color: #7289da"
+    @click="$emit('click')"
+  ></div>
 </template>
 
 <script>
