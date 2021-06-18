@@ -2,7 +2,7 @@
   <div class="contents">
     <div class="form-wrapper form-wrapper-sm">
       <h1>로그인</h1>
-      <form @submit.prevent="submitForm" class="form">
+      <form @submit.prevent="submitForm" class="form" :class="{ mobile: $isMobile() }">
         <div>
           <label for="username">유저이름 또는 별명</label>
           <input type="text" id="username" v-model="username" />
@@ -23,7 +23,9 @@
         >
           로그인
         </button>
-        <p>{{ logMessage }}</p>
+        <div class="signup-message">
+          계정이 필요한가요? <router-link to="/signup">가입하기</router-link>
+        </div>
       </form>
     </div>
   </div>
@@ -58,6 +60,7 @@ export default {
       } catch (error) {
         console.log(error);
         this.logMessage = error.response.data;
+        alert(this.logMessage);
       } finally {
         this.initForm();
       }
@@ -73,5 +76,18 @@ export default {
 <style>
 .btn {
   color: white;
+}
+.signup-message {
+  margin-top: 10px;
+  font-size: 10pt;
+  color: #8e9297;
+}
+.signup-message a {
+  color: #00AFF4;
+  text-decoration: none;
+  font-weight: bold;
+}
+a:hover {
+  text-decoration: underline;
 }
 </style>

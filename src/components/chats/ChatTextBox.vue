@@ -76,6 +76,7 @@ export default {
   padding: 10px;
   margin-left: 5px;
   fill: #b9bbbe;
+  transition: 0.2s;
 }
 .icon:hover {
   fill: #dcddde;
@@ -134,5 +135,10 @@ export default {
   border: 0 solid #dae1e7;
   width: 120px;
   margin-left: 10px;
+  transition: 0.2s;
+}
+
+.btn:hover {
+  background: #212121;
 }
 </style>

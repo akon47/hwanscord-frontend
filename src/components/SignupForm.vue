@@ -2,7 +2,7 @@
   <div class="contents">
     <div class="form-wrapper form-wrapper-sm">
       <h1>회원가입</h1>
-      <form @submit.prevent="submitForm" class="form">
+      <form @submit.prevent="submitForm" class="form" :class="{ mobile: $isMobile() }">
         <div>
           <label for="username">유저이름 또는 별명</label>
           <input type="text" id="username" v-model="username" />
