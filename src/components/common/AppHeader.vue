@@ -61,6 +61,11 @@ a {
   color: #dedede;
   font-size: 18px;
 }
+
+a:hover {
+  text-decoration: none;
+}
+
 a.logo {
   font-size: 30px;
   font-weight: 900;

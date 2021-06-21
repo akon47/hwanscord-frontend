@@ -35,7 +35,13 @@ const router = new VueRouter({
     },
     {
       path: '/main',
+      redirect: '/main/@me',
+      meta: { authRequired: true }
+    },
+    {
+      path: '/main/:channelId',
       component: () => import('../views/MainPage.vue'),
+      props: true,
       meta: { authRequired: true }
     },
     {

@@ -39,6 +39,11 @@ import { uploadFile } from "../../api/attachment";
 import { apiUrl } from "../../api/index";
 
 export default {
+  props: {
+    currentChannelId: {
+      type: String,
+    },
+  },
   data() {
     return {
       message: "",
@@ -47,7 +52,7 @@ export default {
   methods: {
     async submitForm() {
       if (this.message !== "") {
-        await sendMessage(this.message);
+        await sendMessage(this.currentChannelId, this.message);
         this.clearMessage();
       }
     },
@@ -55,8 +60,8 @@ export default {
       this.message = "";
     },
     async handleFileChange(e) {
+      console.log(e);
       const file = e.target.files[0];
-      console.log(file);
       const { data } = await uploadFile(file);
       await sendMessage(`${apiUrl}${data.filepath}`);
     },

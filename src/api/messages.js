@@ -1,19 +1,19 @@
 import { messages } from './index'
 
-function fetchMessages() {
-    return messages.get('/');
+function fetchMessages(channelId) {
+    return messages.get(`/${channelId}`);
 }
 
-function sendMessage(message) {
-    return messages.post('/', { message: message });
+function sendMessage(channelId, message) {
+    return messages.post('/', { postedBy: channelId, message: message });
 }
 
-function deleteMessage(messageid) {
-    return messages.delete(`/${messageid}`);
+function deleteMessage(messageId) {
+    return messages.delete(`/${messageId}`);
 }
 
-function modifyMessage(messageid, message) {
-    return messages.put(`/${messageid}`, { message: message });
+function modifyMessage(messageId, message) {
+    return messages.put(`/${messageId}`, { message: message });
 }
 
 export { fetchMessages, sendMessage, deleteMessage, modifyMessage };

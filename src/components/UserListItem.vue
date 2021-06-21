@@ -1,5 +1,5 @@
 <template>
-  <div class="root" v-bind:style="{ opacity: `${opacity}` }">
+  <div class="root" :class="{offline: !isOnline}">
     <span>
       <avatar v-bind:userData="userData" @click="avatarClick"></avatar>
     </span>
@@ -29,9 +29,6 @@ export default {
     isOnline() {
       return this.userData.connections > 0;
     },
-    opacity() {
-      return this.userData.connections > 0 ? 1.0 : 0.5;
-    },
   },
   methods: {
     avatarClick() {
@@ -58,9 +55,14 @@ export default {
   border-radius: 5px;
 }
 
+.offline {
+  opacity: 0.5;
+}
+
 .root:hover {
-  background-color: #565656;
+  background-color: rgb(57, 60, 67);
   border-radius: 5px;
+  opacity: 1;
 }
 
 .avatar {

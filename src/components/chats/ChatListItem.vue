@@ -155,11 +155,15 @@ export default {
     },
     isContinuous() {
       if (this.messages !== null && this.index !== null && this.index > 0) {
-        const previousDate = new Date(this.messages[this.index - 1].createdAt);
-        const currentDate = new Date(this.message.createdAt);
+        if(this.messages[this.index - 1].createdBy._id === this.message.createdBy._id) {
+          const previousDate = new Date(this.messages[this.index - 1].createdAt);
+          const currentDate = new Date(this.message.createdAt);
 
-        const interval = currentDate.getTime() - previousDate.getTime();
-        return interval <= 1000 * 60 * 5; // 이전 메시지가 5분 이내의 메시지라면 true
+          const interval = currentDate.getTime() - previousDate.getTime();
+          return interval <= 1000 * 60 * 5; // 이전 메시지가 5분 이내의 메시지라면 true
+        } else {
+          return false;
+        }
       } else {
         return false;
       }

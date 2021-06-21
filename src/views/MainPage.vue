@@ -2,18 +2,20 @@
   <div class="h-100">
     <loading-spinner v-if="isLoading"></loading-spinner>
     <div v-else class="h-100">
+      <div class="channel-area" v-if="!$isMobile()">
+        <div class="channel-list">
+          <channel-list :currentChannelId="channelId" :channels="channels"></channel-list>
+        </div>
+      </div>
       <div class="message-area" :class="{ mobile: $isMobile() }">
-        <chat-room v-bind:messages="messages" v-bind:users="users"></chat-room>
+        <chat-room :currentChannelId="channelId" :users="users"></chat-room>
       </div>
       <div class="user-area" v-if="!$isMobile()">
         <div id="user-list">
-          <user-list v-bind:users="users"></user-list>
+          <user-list :users="users"></user-list>
         </div>
         <div id="current-info">
-          <div
-            id="avatar"
-            v-bind:style="{ backgroundImage: `url(${avatarUrl})` }"
-          >
+          <div id="avatar" :style="{ backgroundImage: `url(${avatarUrl})` }">
             <div style="position: relative; height: 100%; width: 100%">
               <div id="avatar-change-message">
                 <label for="avatar-file" style="cursor: pointer"
@@ -50,19 +52,27 @@
 import ChatRoom from "../components/chats/ChatRoom.vue";
 import UserList from "../components/UserList.vue";
 import LoadingSpinner from "../components/common/LoadingSpinner.vue";
-import { fetchMessages } from "../api/messages";
+import { fetchChannels } from "../api/channels";
 import { fetchUsers } from "../api/users";
 import { uploadAvatar } from "../api/avatar";
 import { apiUrl } from "../api/index";
+import ChannelList from "../components/channels/ChannelList.vue";
 
 export default {
   components: {
     UserList,
     ChatRoom,
     LoadingSpinner,
+    ChannelList,
+  },
+  props: {
+    channelId: {
+      type: String,
+    },
   },
   data() {
     return {
+      channels: [],
       messages: [],
       users: [],
       isLoading: false,
@@ -84,8 +94,8 @@ export default {
     async fetchData() {
       this.isLoading = true;
       try {
-        const messageData = await fetchMessages();
-        this.messages = messageData.data.messages;
+        const channelData = await fetchChannels();
+        this.channels = channelData.data.channels;
 
         const userData = await fetchUsers();
         this.users = userData.data.users;
@@ -124,7 +134,7 @@ export default {
     isLoading() {
       if (!this.isLoading) {
         this.$nextTick(() => {
-          this.messages = this.messages.slice();
+          this.channels = this.channels.slice();
           this.users = this.users.slice();
         });
       }
@@ -134,22 +144,11 @@ export default {
     this.fetchData();
   },
   sockets: {
-    newMessageReceived(data) {
-      this.messages.push(data);
+    newUserSignup(data) {
+      this.users.push(data);
     },
-    messageDeleted(data) {
-      const index = this.messages.findIndex(
-        (elem) => elem._id === data.messageid
-      );
-      if (index >= 0) {
-        this.messages.splice(index, 1);
-      }
-    },
-    messageModified(data) {
-      const index = this.messages.findIndex((elem) => elem._id === data._id);
-      if (index >= 0) {
-        this.$set(this.messages, index, data);
-      }
+    newChannelAdded(data) {
+      this.channels.push(data);
     },
     userAvatarChanged(data) {
       this.updateUserAvatar(data);
@@ -165,24 +164,32 @@ export default {
 </script>
 
 <style scoped>
+div.channel-area {
+  width: 230px;
+  height: 100%;
+  box-sizing: border-box;
+  background: #2f3136;
+  float: left;
+}
+
 div.message-area {
-  width: calc(100% - 250px);
+  width: calc(100% - 460px);
   height: 100%;
   float: left;
   box-sizing: border-box;
   background: #36393f;
 }
 
-div.mobile {
-  width: 100%;
-}
-
 div.user-area {
-  width: 250px;
+  width: 230px;
   height: 100%;
   float: right;
   box-sizing: border-box;
   background: #2f3136;
+}
+
+div.mobile {
+  width: 100%;
 }
 
 #user-list {

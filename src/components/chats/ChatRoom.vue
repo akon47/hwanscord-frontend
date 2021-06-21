@@ -1,5 +1,5 @@
 <template>
-  <div class="h-100">
+  <div v-if="isValidChannel & !isLoading" class="h-100">
     <div class="chatarea" ref="chatarea">
       <chat-list-item
         v-for="(message, index) in messages"
@@ -12,31 +12,56 @@
       ></chat-list-item>
     </div>
     <div class="chatinputbox">
-      <chat-text-box></chat-text-box>
+      <chat-text-box :currentChannelId="currentChannelId"></chat-text-box>
     </div>
-    <!-- <file-drag-drop></file-drag-drop> -->
+  </div>
+  <div v-else class="h-100">
+    <div v-show="isLoading">
+      
+    </div>
   </div>
 </template>
 
 <script>
-// import FileDragDrop from '../common/FileDragDrop.vue';
 import ChatListItem from "./ChatListItem.vue";
 import ChatTextBox from "./ChatTextBox.vue";
+import { fetchMessages } from "../../api/messages";
 export default {
   components: {
     ChatTextBox,
     ChatListItem,
-    // FileDragDrop,
+  },
+  data() {
+    return {
+      messages: [],
+      isLoading: false,
+      isValidChannel: false,
+    };
   },
   props: {
-    messages: {
-      type: Array,
+    currentChannelId: {
+      type: String,
     },
     users: {
       type: Array,
     },
   },
   methods: {
+    async fetchData() {
+      this.isLoading = true;
+      if(this.currentChannelId) {
+        try {
+          const messageData = await fetchMessages(this.currentChannelId);
+          this.messages = messageData.data.messages;
+          this.isValidChannel = true;
+        } catch (error) {
+          this.isValidChannel = false;
+          this.$router.push("/");
+        } finally {
+          this.isLoading = false;
+        }
+      }
+    },
     onResize() {
       this.chatScrollToBottom(false);
     },
@@ -51,6 +76,33 @@ export default {
   watch: {
     messages() {
       this.$nextTick(() => this.chatScrollToBottom(true));
+    },
+    currentChannelId() {
+      this.fetchData();
+    },
+  },
+  created() {
+    this.fetchData();
+  },
+  sockets: {
+    newMessageReceived(data) {
+      if(data.postedBy === this.currentChannelId) {
+        this.messages.push(data);
+      }
+    },
+    messageDeleted(data) {
+      const index = this.messages.findIndex(
+        (elem) => elem._id === data.messageid
+      );
+      if (index >= 0) {
+        this.messages.splice(index, 1);
+      }
+    },
+    messageModified(data) {
+      const index = this.messages.findIndex((elem) => elem._id === data._id);
+      if (index >= 0) {
+        this.$set(this.messages, index, data);
+      }
     },
   },
   mounted() {

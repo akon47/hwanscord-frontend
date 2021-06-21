@@ -1,5 +1,5 @@
 <template>
-  <div class="userlist">
+  <div class="user-list">
     <div class="status">
       <span>온라인</span>
       <span> - </span>
@@ -55,23 +55,23 @@ export default {
   margin: 10px;
 }
 
-.userlist {
+.user-list {
   height: 100%;
   user-select: none;
   overflow-y: auto;
   overflow-x: hidden;
 }
 
-.userlist::-webkit-scrollbar {
+.user-list::-webkit-scrollbar {
   width: 10px;
 }
-.userlist::-webkit-scrollbar-thumb {
+.user-list::-webkit-scrollbar-thumb {
   background-color: #212121;
   border-radius: 10px;
   background-clip: padding-box;
   border: 2px solid transparent;
 }
-.userlist::-webkit-scrollbar-track {
+.user-list::-webkit-scrollbar-track {
   background-color: #00000030;
   border-radius: 10px;
   background-clip: padding-box;
