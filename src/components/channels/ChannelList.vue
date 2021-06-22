@@ -49,6 +49,7 @@ export default {
 <style scoped>
 .icon {
   color: #b9bbbe;
+  font-size: 12pt;
   transition: 0.2s;
 }
 .icon:hover {

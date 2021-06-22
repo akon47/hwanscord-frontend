@@ -1,6 +1,6 @@
 <template>
   <div class="root" :class="{ selected: isSelected }" @click="click">
-    <span>
+    <span class="header">
       #
       {{ channelData.channelName }}
     </span>
@@ -89,6 +89,12 @@ export default {
 }
 .icon:hover {
   color: #dcddde;
+}
+
+.header {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .root {
