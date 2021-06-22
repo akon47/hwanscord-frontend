@@ -27,7 +27,7 @@ export default {
       return this.$store.getters.isLogin;
     },
     logoLink() {
-      return this.$store.getters.isLogin ? "/main" : "/";
+      return this.$store.getters.isLogin ? "/main/@me" : "/";
     }
   },
   methods: {
@@ -36,7 +36,7 @@ export default {
         this.$socket.client.disconnect();
       }
       this.$store.dispatch("Signout");
-      this.$router.push("/");
+      this.$router.push("/signin");
     }
   }
 };

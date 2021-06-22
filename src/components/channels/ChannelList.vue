@@ -2,6 +2,9 @@
   <div class="channel-list">
     <div class="channel-type">
       <span>채팅채널</span>
+      <div class="icon" @click="addChannel">
+        <font-awesome-icon :icon="['fas','plus']" />
+      </div>
     </div>
     <channel-list-item
       v-for="channel in channels"
@@ -9,11 +12,16 @@
       :channelData="channel"
       :currentChannelId="currentChannelId"
     ></channel-list-item>
+    <div class="channel-type">
+      <span>음성채널</span>
+    </div>
   </div>
 </template>
 
 <script>
 import ChannelListItem from "./ChannelListItem.vue";
+import { createChannel } from "../../api/channels";
+
 export default {
   components: {
     ChannelListItem,
@@ -28,13 +36,31 @@ export default {
     },
   },
   methods: {
-
-  }
+    async addChannel() {
+      const channelName = prompt("채널 생성");
+      if (channelName) {
+        await createChannel(channelName);
+      }
+    },
+  },
 };
 </script>
 
 <style scoped>
+.icon {
+  color: #b9bbbe;
+  transition: 0.2s;
+}
+.icon:hover {
+  color: #dcddde;
+}
+
 .channel-type {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+
   color: #cccccc;
   font-size: 10pt;
   font-weight: bold;

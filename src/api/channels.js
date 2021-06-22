@@ -8,12 +8,12 @@ function createChannel(name) {
     return channels.post('/', { channelName: name });
 }
 
-function deleteChannel(channelid) {
-    return channels.delete(`/${channelid}`);
+function deleteChannel(channelId) {
+    return channels.delete(`/${channelId}`);
 }
 
-function modifyChannel(channelid, name) {
-    return channels.put(`/${channelid}`, { channelName: name });
+function modifyChannel(channelId, name) {
+    return channels.put(`/${channelId}`, { channelName: name });
 }
 
 export { fetchChannels, createChannel, deleteChannel, modifyChannel };

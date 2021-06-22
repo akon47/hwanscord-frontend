@@ -2,11 +2,7 @@
   <div class="chatinput">
     <div class="attachments">
       <label class="attachment-label" for="attachment">
-        <svg class="icon" viewBox="0 0 24 24">
-          <path
-            d="M12 2.00098C6.486 2.00098 2 6.48698 2 12.001C2 17.515 6.486 22.001 12 22.001C17.514 22.001 22 17.515 22 12.001C22 6.48698 17.514 2.00098 12 2.00098ZM17 13.001H13V17.001H11V13.001H7V11.001H11V7.00098H13V11.001H17V13.001Z"
-          ></path>
-        </svg>
+        <font-awesome-icon class="icon" :icon="['fas','plus-square']" />
       </label>
       <input
         @change="handleFileChange"
@@ -79,12 +75,12 @@ export default {
   width: 100%;
   height: 100%;
   padding: 10px;
-  margin-left: 5px;
-  fill: #b9bbbe;
+  margin-left: 3px;
+  color: #b9bbbe;
   transition: 0.2s;
 }
 .icon:hover {
-  fill: #dcddde;
+  color: #dcddde;
 }
 
 .attachment-label {
@@ -115,7 +111,7 @@ export default {
   width: calc(100% - 20px);
   border-radius: 5px;
   box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1);
-  padding-left: 10px;
+  padding-left: 6px;
   padding-right: 5px;
   padding-top: 5px;
   padding-bottom: 5px;

@@ -5,6 +5,7 @@ import store from "./store/index";
 import VueSocketIOExt from "vue-socket.io-extended";
 import socket from "./socket/index";
 import VueMobileDetection from "vue-mobile-detection";
+import "./fontAwesomeIcon.js";
 
 Vue.config.productionTip = false;
 

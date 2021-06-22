@@ -16,9 +16,7 @@
     </div>
   </div>
   <div v-else class="h-100">
-    <div v-show="isLoading">
-      
-    </div>
+    <loading-spinner v-if="isLoading" />
   </div>
 </template>
 
@@ -26,10 +24,12 @@
 import ChatListItem from "./ChatListItem.vue";
 import ChatTextBox from "./ChatTextBox.vue";
 import { fetchMessages } from "../../api/messages";
+import LoadingSpinner from '../common/LoadingSpinner.vue';
 export default {
   components: {
     ChatTextBox,
     ChatListItem,
+    LoadingSpinner,
   },
   data() {
     return {
@@ -49,16 +49,20 @@ export default {
   methods: {
     async fetchData() {
       this.isLoading = true;
-      if(this.currentChannelId) {
-        try {
-          const messageData = await fetchMessages(this.currentChannelId);
-          this.messages = messageData.data.messages;
-          this.isValidChannel = true;
-        } catch (error) {
+      if (this.currentChannelId) {
+        if (this.currentChannelId === "@me") {
           this.isValidChannel = false;
-          this.$router.push("/");
-        } finally {
           this.isLoading = false;
+        } else {
+          try {
+            const messageData = await fetchMessages(this.currentChannelId);
+            this.messages = messageData.data.messages;
+            this.isValidChannel = true;
+          } catch (error) {
+            this.isValidChannel = false;
+          } finally {
+            this.isLoading = false;
+          }
         }
       }
     },
@@ -86,7 +90,7 @@ export default {
   },
   sockets: {
     newMessageReceived(data) {
-      if(data.postedBy === this.currentChannelId) {
+      if (data.postedBy._id === this.currentChannelId) {
         this.messages.push(data);
       }
     },

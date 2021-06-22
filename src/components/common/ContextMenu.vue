@@ -9,6 +9,7 @@
           v-bind:header="item.header"
           @click="menuClick(item.callback)"
         />
+        <slot></slot>
       </div>
     </transition>
   </div>

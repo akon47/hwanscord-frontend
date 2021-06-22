@@ -14,7 +14,6 @@ export default {};
   justify-content: center;
   align-items: center;
   height: 100%;
-  background: #212121;
 }
 .spinner {
   width: 50px;
@@ -24,6 +23,8 @@ export default {};
   border-bottom: 5px solid #fe9616;
   animation: spin 1s linear infinite;
   position: relative;
+  justify-content: center;
+  align-content: center;
 }
 @keyframes spin {
   from {

@@ -16,7 +16,7 @@ const router = new VueRouter({
       component: () => import('../views/SigninPage.vue'),
       beforeEnter: (to, from, next) => {
         if(store.getters.isLogin) {
-          next('/main');
+          next('/main/@me');
         } else {
           next();
         }
@@ -27,7 +27,7 @@ const router = new VueRouter({
       component: () => import('../views/SignupPage.vue'),
       beforeEnter: (to, from, next) => {
         if(store.getters.isLogin) {
-          next('/main');
+          next('/main/@me');
         } else {
           next();
         }

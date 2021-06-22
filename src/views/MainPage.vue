@@ -3,21 +3,22 @@
     <loading-spinner v-if="isLoading"></loading-spinner>
     <div v-else class="h-100">
       <div class="channel-area" v-if="!$isMobile()">
-        <div class="channel-list">
-          <channel-list :currentChannelId="channelId" :channels="channels"></channel-list>
-        </div>
+        <channel-list
+          :currentChannelId="channelId"
+          :channels="channels"
+        ></channel-list>
       </div>
       <div class="message-area" :class="{ mobile: $isMobile() }">
         <chat-room :currentChannelId="channelId" :users="users"></chat-room>
       </div>
       <div class="user-area" v-if="!$isMobile()">
-        <div id="user-list">
+        <div class="user-list">
           <user-list :users="users"></user-list>
         </div>
-        <div id="current-info">
-          <div id="avatar" :style="{ backgroundImage: `url(${avatarUrl})` }">
+        <div class="current-info">
+          <div class="avatar" :style="{ backgroundImage: `url(${avatarUrl})` }">
             <div style="position: relative; height: 100%; width: 100%">
-              <div id="avatar-change-message">
+              <div class="avatar-change-message">
                 <label for="avatar-file" style="cursor: pointer"
                   >아바타<br />변경</label
                 >
@@ -39,7 +40,7 @@
               />
             </div>
           </div>
-          <div id="userinfo">
+          <div class="userinfo">
             {{ $store.state.username }}
           </div>
         </div>
@@ -150,6 +151,18 @@ export default {
     newChannelAdded(data) {
       this.channels.push(data);
     },
+    channelModified(data) {
+      const index = this.channels.findIndex((elem) => elem._id === data._id);
+      if (index >= 0) {
+        this.$set(this.channels, index, data);
+      }
+    },
+    channelDeleted(data) {
+      const index = this.channels.findIndex((elem) => elem._id === data._id);
+      if (index >= 0) {
+        this.channels.splice(index, 1);
+      }
+    },
     userAvatarChanged(data) {
       this.updateUserAvatar(data);
     },
@@ -192,18 +205,18 @@ div.mobile {
   width: 100%;
 }
 
-#user-list {
-  height: calc(100% - 80px);
+.user-list {
+  height: calc(100% - 70px);
 }
 
-#current-info {
+.current-info {
   display: flex;
   height: 70px;
   background-color: #292b2f;
   user-select: none;
 }
 
-#avatar {
+.avatar {
   float: left;
   width: 50px;
   height: 50px;
@@ -224,7 +237,7 @@ div.mobile {
   flex-direction: column;
 }
 
-#avatar-change-message {
+.avatar-change-message {
   display: flex;
   border-radius: 50%;
   position: absolute;
@@ -242,12 +255,12 @@ div.mobile {
   z-index: 1000;
 }
 
-#avatar-change-message:hover {
+.avatar-change-message:hover {
   color: white;
   background-color: #00000060;
 }
 
-#userinfo {
+.userinfo {
   color: white;
   font-size: 14pt;
   font-weight: bold;

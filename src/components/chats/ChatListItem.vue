@@ -50,26 +50,7 @@
       />
 
       <div v-if="isMyMessage" class="menu" @click="menuClick">
-        <svg
-          viewBox="0 0 24 24"
-          style="
-            position: absolute;
-            left: 0;
-            right: 0;
-            top: 0;
-            bottom: 0;
-            width: 100%;
-            height: 100%;
-            padding: 1px;
-          "
-        >
-          <path
-            fill="currentColor"
-            fill-rule="evenodd"
-            clip-rule="evenodd"
-            d="M7 12.001C7 10.8964 6.10457 10.001 5 10.001C3.89543 10.001 3 10.8964 3 12.001C3 13.1055 3.89543 14.001 5 14.001C6.10457 14.001 7 13.1055 7 12.001ZM14 12.001C14 10.8964 13.1046 10.001 12 10.001C10.8954 10.001 10 10.8964 10 12.001C10 13.1055 10.8954 14.001 12 14.001C13.1046 14.001 14 13.1055 14 12.001ZM19 10.001C20.1046 10.001 21 10.8964 21 12.001C21 13.1055 20.1046 14.001 19 14.001C17.8954 14.001 17 13.1055 17 12.001C17 10.8964 17.8954 10.001 19 10.001Z"
-          ></path>
-        </svg>
+        <font-awesome-icon class="icon" :icon="['fas', 'bars']" />
       </div>
     </div>
   </div>
@@ -155,8 +136,13 @@ export default {
     },
     isContinuous() {
       if (this.messages !== null && this.index !== null && this.index > 0) {
-        if(this.messages[this.index - 1].createdBy._id === this.message.createdBy._id) {
-          const previousDate = new Date(this.messages[this.index - 1].createdAt);
+        if (
+          this.messages[this.index - 1].createdBy._id ===
+          this.message.createdBy._id
+        ) {
+          const previousDate = new Date(
+            this.messages[this.index - 1].createdAt
+          );
           const currentDate = new Date(this.message.createdAt);
 
           const interval = currentDate.getTime() - previousDate.getTime();
@@ -238,6 +224,23 @@ export default {
   opacity: 0;
   color: #b9bbbe;
 }
+
+.menu > .icon {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  padding: 3px;
+  color: #b9bbbe;
+}
+
+.menu > .icon:hover {
+  color: #dcddde;
+}
+
 .menu:hover {
   color: #dcddde;
   box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.6);

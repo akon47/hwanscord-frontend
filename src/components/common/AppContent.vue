@@ -1,6 +1,6 @@
 <template>
   <div class="h-100">
-    <star-sky v-if="$route.path !== '/main'"></star-sky>
+    <star-sky v-if="$route.path == '/signup' || $route.path == '/signin'"></star-sky>
     <transition name="component-fade" mode="out-in">
       <router-view></router-view>
     </transition>
