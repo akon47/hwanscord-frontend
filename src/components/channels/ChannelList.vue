@@ -22,6 +22,7 @@
       v-for="voiceChannel in voiceChannels"
       :key="voiceChannel._id"
       :channelData="voiceChannel"
+      :users="users"
     >
     </voice-channel-list-item>
   </div>
@@ -36,20 +37,24 @@ import VoiceChannelListItem from "./VoiceChannelListItem.vue";
 export default {
   components: {
     ChannelListItem,
-    VoiceChannelListItem,
+    VoiceChannelListItem
   },
   props: {
     currentChannelId: {
-      type: String,
+      type: String
     },
     channels: {
       type: Array,
-      require: true,
+      require: true
     },
     voiceChannels: {
       type: Array,
-      require: true,
+      require: true
     },
+    users: {
+      type: Array,
+      require: true
+    }
   },
   methods: {
     async addChannel() {
@@ -64,7 +69,7 @@ export default {
         await createVoiceChannel(channelName);
       }
     }
-  },
+  }
 };
 </script>
 

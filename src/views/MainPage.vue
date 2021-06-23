@@ -7,6 +7,7 @@
           :currentChannelId="channelId"
           :channels="channels"
           :voiceChannels="voiceChannels"
+          :users="users"
         ></channel-list>
         <voice-chat />
       </div>
@@ -120,7 +121,7 @@ export default {
       }
     },
     updateUserConnection(data) {
-      const index = this.users.findIndex((elem) => elem._id === data.userid);
+      const index = this.users.findIndex((elem) => elem._id === data.userId);
       if (index >= 0) {
         const user = this.users[index];
         user.connections = data.connections;
@@ -128,7 +129,7 @@ export default {
       }
     },
     updateUserAvatar(data) {
-      const index = this.users.findIndex((elem) => elem._id === data.userid);
+      const index = this.users.findIndex((elem) => elem._id === data.userId);
       if (index >= 0) {
         const user = this.users[index];
         user.avatar = data.avatar;

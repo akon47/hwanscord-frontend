@@ -101,13 +101,13 @@ export default {
   display: flex;
   position: relative;
   width: calc(100% - 10px);
-  padding: 3px;
+  padding: 5px;
   margin: 5px;
   background-color: transparent;
   border-radius: 5px;
   cursor: pointer;
-  font-size: 13pt;
-  font-weight: bold;
+  font-size: 16px;
+  line-height: 20px;
   color: darkgray;
   padding-left: 15px;
   justify-content: space-between;

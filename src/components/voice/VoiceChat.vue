@@ -129,23 +129,23 @@ export default {
           if (sessionDescription.type == "offer") {
             console.log("Creating answer");
             peer.createAnswer(
-              function (localDescription) {
+              (localDescription) => {
                 console.log("Answer description is: ", localDescription);
                 peer.setLocalDescription(
                   localDescription,
-                  function () {
+                  () => {
                     relaySessionDescription({
                       peerId: peerId,
                       sessionDescription: localDescription,
                     });
                     console.log("Answer setLocalDescription succeeded");
                   },
-                  function () {
+                  () => {
                     alert("Answer setLocalDescription failed!");
                   }
                 );
               },
-              function (error) {
+              (error) => {
                 console.log("Error creating answer: ", error);
                 console.log(peer);
               }

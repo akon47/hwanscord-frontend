@@ -18,6 +18,9 @@
         />
       </div>
     </div>
+    <div v-for="peer in peers" :key="peer.socketId">
+      <voice-channel-user-item :peer="peer" :users="users" />
+    </div>
   </div>
 </template>
 
@@ -25,33 +28,41 @@
 import ContextMenu from "../common/ContextMenu.vue";
 import {
   modifyVoiceChannel,
-  deleteVoiceChannel,
+  deleteVoiceChannel
 } from "../../api/voiceChannels";
 import { join } from "../../socket/voice";
+import VoiceChannelUserItem from "./VoiceChannelUserItem.vue";
 
 export default {
   components: {
     ContextMenu,
+    VoiceChannelUserItem
   },
   props: {
     channelData: {
       type: Object,
-      require: true,
+      require: true
     },
+    users: {
+      type: Array,
+      require: true
+    }
   },
   data() {
     return {
       isMenuOpened: false,
       menuItems: [
         { header: "수정", callback: () => this.modify() },
-        { header: "삭제", callback: () => this.delete() },
+        { header: "삭제", callback: () => this.delete() }
       ],
+      peers: []
     };
   },
   methods: {
     click() {
-      join(this.channelData._id, { username: this.$store.state.username });
-      console.log(navigator);
+      if (!this.isJoined) {
+        join(this.channelData._id, { username: this.$store.state.username });
+      }
     },
     menuClick() {
       this.isMenuOpened = true;
@@ -67,16 +78,37 @@ export default {
     },
     async delete() {
       await deleteVoiceChannel(this.channelData._id);
-    },
+    }
   },
   computed: {
     isMyChannel() {
       return this.channelData.createdBy.username === this.$store.state.username;
     },
     isJoined() {
-      return false;
-    },
+      return (
+        this.peers.findIndex(
+          elem => elem.socketId === this.$socket.client.id
+        ) >= 0
+      );
+    }
   },
+  sockets: {
+    voiceChannelJoined(data) {
+      if (data.channelId === this.channelData._id) {
+        this.peers.push({ socketId: data.socketId, user: data.user });
+      }
+    },
+    voiceChannelParted(data) {
+      if (data.channelId === this.channelData._id) {
+        const index = this.peers.findIndex(
+          elem => elem.socketId === data.socketId
+        );
+        if (index >= 0) {
+          this.peers.splice(index, 1);
+        }
+      }
+    }
+  }
 };
 </script>
 
@@ -106,13 +138,13 @@ export default {
   display: flex;
   position: relative;
   width: calc(100% - 10px);
-  padding: 3px;
+  padding: 5px;
   margin: 5px;
   background-color: transparent;
   border-radius: 5px;
   cursor: pointer;
-  font-size: 13pt;
-  font-weight: bold;
+  font-size: 16px;
+  line-height: 20px;
   color: darkgray;
   padding-left: 15px;
   justify-content: space-between;
