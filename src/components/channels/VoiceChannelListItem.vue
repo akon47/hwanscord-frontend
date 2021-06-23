@@ -1,36 +1,39 @@
 <template>
-  <div class="root" :class="{ selected: isSelected }" @click="click">
-    <span class="header">
-      <font-awesome-icon :icon="['fas', 'hashtag']" style="color: gray"/>
-      {{ channelData.channelName }}
-    </span>
-    <div v-if="isMyChannel">
-      <context-menu
-        class="context-menu"
-        v-model="isMenuOpened"
-        :menuItems="menuItems"
-      />
-      <font-awesome-icon
-        class="icon"
-        :icon="['fas', 'cog']"
-        @click.stop="menuClick"
-      />
+  <div>
+    <div class="root" :class="{ selected: isJoined }" @click="click">
+      <span class="header">
+        <font-awesome-icon :icon="['fas', 'volume-up']" style="color: gray" />
+        {{ channelData.channelName }}
+      </span>
+      <div v-if="isMyChannel">
+        <context-menu
+          class="context-menu"
+          v-model="isMenuOpened"
+          :menuItems="menuItems"
+        />
+        <font-awesome-icon
+          class="icon"
+          :icon="['fas', 'cog']"
+          @click.stop="menuClick"
+        />
+      </div>
     </div>
   </div>
 </template>
 
 <script>
 import ContextMenu from "../common/ContextMenu.vue";
-import { modifyChannel, deleteChannel } from "../../api/channels"
+import {
+  modifyVoiceChannel,
+  deleteVoiceChannel,
+} from "../../api/voiceChannels";
+import { join } from "../../socket/voice";
 
 export default {
   components: {
     ContextMenu,
   },
   props: {
-    currentChannelId: {
-      type: String,
-    },
     channelData: {
       type: Object,
       require: true,
@@ -47,29 +50,31 @@ export default {
   },
   methods: {
     click() {
-      if (!this.isSelected) {
-        this.$router.push(`/main/${this.channelData._id}`);
-      }
+      join(this.channelData._id, { username: this.$store.state.username });
+      console.log(navigator);
     },
     menuClick() {
       this.isMenuOpened = true;
     },
     async modify() {
-      const channelName = prompt("채널 이름 수정", this.channelData.channelName);
+      const channelName = prompt(
+        "채널 이름 수정",
+        this.channelData.channelName
+      );
       if (channelName) {
-        await modifyChannel(this.channelData._id, channelName);
+        await modifyVoiceChannel(this.channelData._id, channelName);
       }
     },
     async delete() {
-      await deleteChannel(this.channelData._id);
+      await deleteVoiceChannel(this.channelData._id);
     },
   },
   computed: {
-    isSelected() {
-      return this.currentChannelId === this.channelData._id;
-    },
     isMyChannel() {
       return this.channelData.createdBy.username === this.$store.state.username;
+    },
+    isJoined() {
+      return false;
     },
   },
 };

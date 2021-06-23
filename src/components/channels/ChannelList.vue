@@ -3,7 +3,7 @@
     <div class="channel-type">
       <span>채팅채널</span>
       <div class="icon" @click="addChannel">
-        <font-awesome-icon :icon="['fas','plus']" />
+        <font-awesome-icon :icon="['fas', 'plus']" />
       </div>
     </div>
     <channel-list-item
@@ -14,23 +14,39 @@
     ></channel-list-item>
     <div class="channel-type">
       <span>음성채널</span>
+      <div class="icon" @click="addVoiceChannel">
+        <font-awesome-icon :icon="['fas', 'plus']" />
+      </div>
     </div>
+    <voice-channel-list-item
+      v-for="voiceChannel in voiceChannels"
+      :key="voiceChannel._id"
+      :channelData="voiceChannel"
+    >
+    </voice-channel-list-item>
   </div>
 </template>
 
 <script>
 import ChannelListItem from "./ChannelListItem.vue";
 import { createChannel } from "../../api/channels";
+import { createVoiceChannel } from "../../api/voiceChannels";
+import VoiceChannelListItem from "./VoiceChannelListItem.vue";
 
 export default {
   components: {
     ChannelListItem,
+    VoiceChannelListItem,
   },
   props: {
     currentChannelId: {
       type: String,
     },
     channels: {
+      type: Array,
+      require: true,
+    },
+    voiceChannels: {
       type: Array,
       require: true,
     },
@@ -42,6 +58,12 @@ export default {
         await createChannel(channelName);
       }
     },
+    async addVoiceChannel() {
+      const channelName = prompt("채널 생성");
+      if (channelName) {
+        await createVoiceChannel(channelName);
+      }
+    }
   },
 };
 </script>

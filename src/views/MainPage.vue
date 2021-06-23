@@ -6,7 +6,9 @@
         <channel-list
           :currentChannelId="channelId"
           :channels="channels"
+          :voiceChannels="voiceChannels"
         ></channel-list>
+        <voice-chat />
       </div>
       <div class="message-area" :class="{ mobile: $isMobile() }">
         <chat-room :currentChannelId="channelId" :users="users"></chat-room>
@@ -54,10 +56,12 @@ import ChatRoom from "../components/chats/ChatRoom.vue";
 import UserList from "../components/UserList.vue";
 import LoadingSpinner from "../components/common/LoadingSpinner.vue";
 import { fetchChannels } from "../api/channels";
+import { fetchVoiceChannels } from "../api/voiceChannels";
 import { fetchUsers } from "../api/users";
 import { uploadAvatar } from "../api/avatar";
 import { apiUrl } from "../api/index";
 import ChannelList from "../components/channels/ChannelList.vue";
+import VoiceChat from '../components/voice/VoiceChat.vue';
 
 export default {
   components: {
@@ -65,6 +69,7 @@ export default {
     ChatRoom,
     LoadingSpinner,
     ChannelList,
+    VoiceChat,
   },
   props: {
     channelId: {
@@ -74,6 +79,7 @@ export default {
   data() {
     return {
       channels: [],
+      voiceChannels: [],
       messages: [],
       users: [],
       isLoading: false,
@@ -97,6 +103,9 @@ export default {
       try {
         const channelData = await fetchChannels();
         this.channels = channelData.data.channels;
+
+        const voiceChannelData = await fetchVoiceChannels();
+        this.voiceChannels = voiceChannelData.data.channels;
 
         const userData = await fetchUsers();
         this.users = userData.data.users;
@@ -148,6 +157,7 @@ export default {
     newUserSignup(data) {
       this.users.push(data);
     },
+
     newChannelAdded(data) {
       this.channels.push(data);
     },
@@ -161,6 +171,25 @@ export default {
       const index = this.channels.findIndex((elem) => elem._id === data._id);
       if (index >= 0) {
         this.channels.splice(index, 1);
+      }
+    },
+    newVoiceChannelAdded(data) {
+      this.voiceChannels.push(data);
+    },
+    voiceChannelModified(data) {
+      const index = this.voiceChannels.findIndex(
+        (elem) => elem._id === data._id
+      );
+      if (index >= 0) {
+        this.$set(this.voiceChannels, index, data);
+      }
+    },
+    voiceChannelDeleted(data) {
+      const index = this.voiceChannels.findIndex(
+        (elem) => elem._id === data._id
+      );
+      if (index >= 0) {
+        this.voiceChannels.splice(index, 1);
       }
     },
     userAvatarChanged(data) {

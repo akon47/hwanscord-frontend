@@ -19,6 +19,7 @@ function createInstanceWithAuth(url) {
 
 export const instance = createInstance();
 export const channels = createInstanceWithAuth('channels');
+export const voiceChannels = createInstanceWithAuth('voice-channels');
 export const messages = createInstanceWithAuth('messages');
 export const users = createInstanceWithAuth('users');
 export const avatar = createInstanceWithAuth('avatar');

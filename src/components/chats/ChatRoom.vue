@@ -24,7 +24,7 @@
 import ChatListItem from "./ChatListItem.vue";
 import ChatTextBox from "./ChatTextBox.vue";
 import { fetchMessages } from "../../api/messages";
-import LoadingSpinner from '../common/LoadingSpinner.vue';
+import LoadingSpinner from "../common/LoadingSpinner.vue";
 export default {
   components: {
     ChatTextBox,
@@ -71,10 +71,12 @@ export default {
     },
     chatScrollToBottom(smooth) {
       let chatarea = this.$refs.chatarea;
-      chatarea.scrollTo({
-        top: chatarea.scrollHeight,
-        behavior: smooth ? "smooth" : "auto",
-      });
+      if (chatarea) {
+        chatarea.scrollTo({
+          top: chatarea.scrollHeight,
+          behavior: smooth ? "smooth" : "auto",
+        });
+      }
     },
   },
   watch: {

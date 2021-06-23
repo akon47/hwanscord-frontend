@@ -11,7 +11,7 @@ const socket = io(socketUrl, {
       token: store.state.token
     });
   },
-  autoConnect: true
+  autoConnect: true,
 });
 
 export default socket;

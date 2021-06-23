@@ -15,6 +15,7 @@ export default new Vuex.Store({
   state: {
     username: getUserFromLocalStorage() || "",
     token: getTokenFromLocalStorage() || "",
+    voiceChatSupported: false,
   },
   getters: {
     isLogin(state) {
@@ -33,6 +34,9 @@ export default new Vuex.Store({
       if(socket.disconnected) {
         socket.connect();
       }
+    },
+    setVoiceChatSupported(state, supported) {
+      state.voiceChatSupported = supported;
     }
   },
   actions: {
