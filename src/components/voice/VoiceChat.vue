@@ -51,8 +51,8 @@ export default {
           });
           console.log("Access granted to audio");
           this.localMediaStream = stream;
-        } catch (err) {
-          console.log("Access denied for audio", err);
+        } catch (error) {
+          console.log("Access denied for audio", error);
           alert(
             "You chose not to provide access to the microphone, voice chat will not work."
           );
@@ -232,6 +232,11 @@ export default {
         await this.closeLocalMedia();
       }
     },
+    voiceChannelDeleted(data) {
+      if (data._id === this.$store.getters.joinedVoiceChannel) {
+        this.partVoiceChannel();
+      }
+    },
   },
   computed: {
     joinedVoiceChannel() {
@@ -281,8 +286,11 @@ export default {
   color: #b9bbbe;
   font-size: 14px;
   transition: 0.2s;
+  border-radius: 5px;
+  padding: 6px;
 }
 .icon:hover {
   color: #dcddde;
+  background-color: rgb(51, 54, 59);
 }
 </style>

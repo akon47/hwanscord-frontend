@@ -2,7 +2,7 @@
   <div class="chatinput">
     <div class="attachments">
       <label class="attachment-label" for="attachment">
-        <font-awesome-icon class="icon" :icon="['fas','plus-square']" />
+        <font-awesome-icon class="icon" :icon="['fas', 'plus-square']" />
       </label>
       <input
         @change="handleFileChange"
@@ -36,7 +36,7 @@ import { apiUrl } from "../../api/index";
 
 export default {
   props: {
-    currentChannelId: {
+    channelId: {
       type: String,
     },
   },
@@ -48,7 +48,7 @@ export default {
   methods: {
     async submitForm() {
       if (this.message !== "") {
-        await sendMessage(this.currentChannelId, this.message);
+        await sendMessage(this.channelId, this.message);
         this.clearMessage();
       }
     },
@@ -56,10 +56,13 @@ export default {
       this.message = "";
     },
     async handleFileChange(e) {
-      console.log(e);
       const file = e.target.files[0];
-      const { data } = await uploadFile(file);
-      await sendMessage(`${apiUrl}${data.filepath}`);
+      try {
+        const { data } = await uploadFile(file);
+        await sendMessage(this.channelId, `${apiUrl}${data.filepath}`);
+      } catch (error) {
+        alert(error.response.statusText);
+      }
     },
   },
 };

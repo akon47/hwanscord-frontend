@@ -5,14 +5,14 @@
       <div class="channel-area" v-if="!$isMobile()">
         <div class="channel-list">
           <channel-list
-            :currentChannelId="channelId"
+            :channelId="channelId"
             :channels="channels"
             :voiceChannels="voiceChannels"
             :users="users"
           ></channel-list>
         </div>
         <div class="voice-chat" :class="{ joined: isVoiceChannelJoined }">
-          <voice-chat :voiceChannels="voiceChannels"/>
+          <voice-chat :voiceChannels="voiceChannels" />
         </div>
         <div class="current-info">
           <div class="avatar" :style="{ backgroundImage: `url(${avatarUrl})` }">
@@ -45,7 +45,7 @@
         </div>
       </div>
       <div class="message-area" :class="{ mobile: $isMobile() }">
-        <chat-room :currentChannelId="channelId" :users="users"></chat-room>
+        <chat-room :channelId="channelId" :users="users"></chat-room>
       </div>
       <div class="user-area" v-if="!$isMobile()">
         <div class="user-list">
@@ -179,6 +179,10 @@ export default {
       const index = this.channels.findIndex((elem) => elem._id === data._id);
       if (index >= 0) {
         this.channels.splice(index, 1);
+      }
+
+      if (data._id === this.channelId) {
+        this.$router.push("/main/@me");
       }
     },
     newVoiceChannelAdded(data) {

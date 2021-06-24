@@ -12,7 +12,7 @@
       ></chat-list-item>
     </div>
     <div class="chatinputbox">
-      <chat-text-box :currentChannelId="currentChannelId"></chat-text-box>
+      <chat-text-box :channelId="channelId"></chat-text-box>
     </div>
   </div>
   <div v-else class="h-100">
@@ -39,7 +39,7 @@ export default {
     };
   },
   props: {
-    currentChannelId: {
+    channelId: {
       type: String,
     },
     users: {
@@ -49,13 +49,13 @@ export default {
   methods: {
     async fetchData() {
       this.isLoading = true;
-      if (this.currentChannelId) {
-        if (this.currentChannelId === "@me") {
+      if (this.channelId) {
+        if (this.channelId === "@me") {
           this.isValidChannel = false;
           this.isLoading = false;
         } else {
           try {
-            const messageData = await fetchMessages(this.currentChannelId);
+            const messageData = await fetchMessages(this.channelId);
             this.messages = messageData.data.messages;
             this.isValidChannel = true;
           } catch (error) {
@@ -83,7 +83,7 @@ export default {
     messages() {
       this.$nextTick(() => this.chatScrollToBottom(true));
     },
-    currentChannelId() {
+    channelId() {
       this.fetchData();
     },
   },
@@ -92,7 +92,7 @@ export default {
   },
   sockets: {
     newMessageReceived(data) {
-      if (data.postedBy._id === this.currentChannelId) {
+      if (data.postedBy._id === this.channelId) {
         this.messages.push(data);
       }
     },

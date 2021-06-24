@@ -186,9 +186,9 @@ export default {
 .continuous {
   float: left;
   width: 40px;
-  height: 20px;
   display: flex;
-  font-size: 7pt;
+  font-size: 11px;
+  line-height: 18px;
   justify-content: center;
   align-items: center;
   word-break: keep-all;
@@ -205,7 +205,6 @@ export default {
 .context-menu {
   position: absolute;
   width: 100px;
-
   top: -14px;
   right: 60px;
 }

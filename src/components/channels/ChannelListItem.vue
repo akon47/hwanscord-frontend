@@ -28,7 +28,7 @@ export default {
     ContextMenu,
   },
   props: {
-    currentChannelId: {
+    channelId: {
       type: String,
     },
     channelData: {
@@ -66,7 +66,7 @@ export default {
   },
   computed: {
     isSelected() {
-      return this.currentChannelId === this.channelData._id;
+      return this.channelId === this.channelData._id;
     },
     isMyChannel() {
       return this.channelData.createdBy.username === this.$store.state.username;

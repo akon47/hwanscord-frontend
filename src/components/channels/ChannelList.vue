@@ -10,7 +10,7 @@
       v-for="channel in channels"
       :key="channel._id"
       :channelData="channel"
-      :currentChannelId="currentChannelId"
+      :channelId="channelId"
     ></channel-list-item>
     <div class="channel-type">
       <span>음성채널</span>
@@ -40,7 +40,7 @@ export default {
     VoiceChannelListItem
   },
   props: {
-    currentChannelId: {
+    channelId: {
       type: String
     },
     channels: {

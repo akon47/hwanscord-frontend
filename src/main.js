@@ -7,6 +7,7 @@ import socket from "./socket/index";
 import VueMobileDetection from "vue-mobile-detection";
 import "./fontAwesomeIcon.js";
 
+
 Vue.config.productionTip = false;
 
 Vue.use(VueMobileDetection);
