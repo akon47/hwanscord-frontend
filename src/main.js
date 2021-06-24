@@ -6,11 +6,12 @@ import VueSocketIOExt from "vue-socket.io-extended";
 import socket from "./socket/index";
 import VueMobileDetection from "vue-mobile-detection";
 import "./fontAwesomeIcon.js";
-
+import VTooltip from 'v-tooltip'
 
 Vue.config.productionTip = false;
 
 Vue.use(VueMobileDetection);
+Vue.use(VTooltip)
 Vue.use(VueSocketIOExt, socket);
 
 new Vue({

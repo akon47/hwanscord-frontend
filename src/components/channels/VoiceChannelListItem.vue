@@ -15,6 +15,7 @@
           class="icon"
           :icon="['fas', 'cog']"
           @click.stop="menuClick"
+          v-tooltip="'채널 편집'"
         />
       </div>
     </div>

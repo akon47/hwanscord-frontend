@@ -2,7 +2,7 @@
   <div class="channel-list">
     <div class="channel-type">
       <span>채팅채널</span>
-      <div class="icon" @click="addChannel">
+      <div class="icon" @click="addChannel" v-tooltip="'채널 만들기'" >
         <font-awesome-icon :icon="['fas', 'plus']" />
       </div>
     </div>
@@ -14,7 +14,7 @@
     ></channel-list-item>
     <div class="channel-type">
       <span>음성채널</span>
-      <div class="icon" @click="addVoiceChannel">
+      <div class="icon" @click="addVoiceChannel" v-tooltip="'채널 만들기'">
         <font-awesome-icon :icon="['fas', 'plus']" />
       </div>
     </div>

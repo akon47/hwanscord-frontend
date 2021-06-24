@@ -4,14 +4,22 @@
     <div class="voice-container">
       <span>
         <span>
-          <div id="connection">
+          <div v-if="!isLoading" id="connection">
             <font-awesome-icon :icon="['fas', 'signal']" /> 음성 연결됨
+          </div>
+          <div v-else id="loading-message">
+            연결을 기다리는 중
           </div>
           <div id="channel">{{ joinedVoiceChannel }}</div>
         </span>
       </span>
       <span>
-        <div class="icon" @click.stop="partVoiceChannel">
+        <div
+          class="icon"
+          @click.stop="partVoiceChannel"
+          v-tooltip="'연결 끊기'"
+          v-if="!isLoading"
+        >
           <font-awesome-icon :icon="['fas', 'phone-slash']" />
         </div>
       </span>
@@ -23,21 +31,22 @@
 import {
   relayICECandidate,
   relaySessionDescription,
-  part,
+  part
 } from "../../socket/voice";
 
 export default {
   props: {
     voiceChannels: {
       type: Array,
-      require: true,
-    },
+      require: true
+    }
   },
   data() {
     return {
       localMediaStream: null,
       peers: {},
       peerMediaElements: {},
+      isLoading: false
     };
   },
   methods: {
@@ -47,7 +56,7 @@ export default {
         try {
           stream = await navigator.mediaDevices.getUserMedia({
             audio: true,
-            video: false,
+            video: false
           });
           console.log("Access granted to audio");
           this.localMediaStream = stream;
@@ -61,7 +70,7 @@ export default {
     },
     async closeLocalMedia() {
       if (this.localMediaStream !== null) {
-        this.localMediaStream.getTracks().forEach((track) => {
+        this.localMediaStream.getTracks().forEach(track => {
           track.stop();
         });
         this.localMediaStream = null;
@@ -79,7 +88,7 @@ export default {
       peerAudioElement.srcObject = stream;
       voiceElements.appendChild(peerAudioElement);
       return peerAudioElement;
-    },
+    }
   },
   sockets: {
     async addPeer(data) {
@@ -96,19 +105,19 @@ export default {
       );
       this.peers[peerId] = peerConnection;
 
-      peerConnection.onicecandidate = (event) => {
+      peerConnection.onicecandidate = event => {
         if (event.candidate) {
           relayICECandidate({
             peerId: peerId,
             iceCandidate: {
               sdpMLineIndex: event.candidate.sdpMLineIndex,
-              candidate: event.candidate.candidate,
-            },
+              candidate: event.candidate.candidate
+            }
           });
         }
       };
 
-      peerConnection.onaddstream = (event) => {
+      peerConnection.onaddstream = event => {
         console.log("onAddStream", event);
         this.peerMediaElements[peerId] = this.addPeerAudioElement(event.stream);
       };
@@ -124,14 +133,14 @@ export default {
       if (data.shouldCreateOffer) {
         console.log("Creating RTC offer to ", peerId);
         peerConnection.createOffer(
-          (localDescription) => {
+          localDescription => {
             console.log("Local offer description is: ", localDescription);
             peerConnection.setLocalDescription(
               localDescription,
               () => {
                 relaySessionDescription({
                   peerId: peerId,
-                  sessionDescription: localDescription,
+                  sessionDescription: localDescription
                 });
                 console.log("Offer setLocalDescription succeeded");
               },
@@ -140,7 +149,7 @@ export default {
               }
             );
           },
-          (error) => {
+          error => {
             console.log("Error sending offer: ", error);
           }
         );
@@ -174,14 +183,14 @@ export default {
           if (sessionDescription.type == "offer") {
             console.log("Creating answer");
             peer.createAnswer(
-              (localDescription) => {
+              localDescription => {
                 console.log("Answer description is: ", localDescription);
                 peer.setLocalDescription(
                   localDescription,
                   () => {
                     relaySessionDescription({
                       peerId: peerId,
-                      sessionDescription: localDescription,
+                      sessionDescription: localDescription
                     });
                     console.log("Answer setLocalDescription succeeded");
                   },
@@ -190,14 +199,14 @@ export default {
                   }
                 );
               },
-              (error) => {
+              error => {
                 console.log("Error creating answer: ", error);
                 console.log(peer);
               }
             );
           }
         },
-        (error) => {
+        error => {
           console.log("setRemoteDescription error: ", error);
         }
       );
@@ -222,8 +231,15 @@ export default {
     },
     async voiceChannelJoined(data) {
       if (data.socketId === this.$socket.client.id) {
-        await this.setupLocalMedia();
-        this.$store.commit("setJoinedVoiceChannel", data.channelId);
+        try {
+          this.isLoading = true;
+          this.$store.commit("setJoinedVoiceChannel", data.channelId);
+          await this.setupLocalMedia();
+        } catch (error) {
+          console.log(error);
+        } finally {
+          this.isLoading = false;
+        }
       }
     },
     async voiceChannelParted(data) {
@@ -236,19 +252,19 @@ export default {
       if (data._id === this.$store.getters.joinedVoiceChannel) {
         this.partVoiceChannel();
       }
-    },
+    }
   },
   computed: {
     joinedVoiceChannel() {
       const channel = this.voiceChannels.find(
-        (elem) => elem._id === this.$store.getters.joinedVoiceChannel
+        elem => elem._id === this.$store.getters.joinedVoiceChannel
       );
       if (channel) {
         return channel.channelName;
       } else {
         return "";
       }
-    },
+    }
   },
   async mounted() {
     const supported = "getUserMedia" in navigator;
@@ -258,7 +274,7 @@ export default {
     } else {
       //await this.setupLocalMedia();
     }
-  },
+  }
 };
 </script>
 
@@ -277,6 +293,11 @@ export default {
 .voice-container #connection {
   color: #4fdc7c;
 }
+
+.voice-container #loading-message {
+  color: rgb(250, 168, 26);
+}
+
 
 .voice-container #channel {
   color: #b9bbbe;
