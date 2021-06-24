@@ -127,4 +127,6 @@ export default {
 .selected:hover {
   background-color: rgb(57, 60, 67);
 }
+
+:focus { outline: none; }
 </style>
