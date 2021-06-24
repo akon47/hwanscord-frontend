@@ -1,6 +1,6 @@
 <template>
   <div v-show="value">
-    <div class="context-menu-bg" @click="hide" />
+    <div class="context-menu-bg" @click.stop="hide" />
     <transition name="slide-fade">
       <div class="context-menu-root" v-show="value">
         <context-menu-item
@@ -60,6 +60,7 @@ export default {
   height: 100vh;
   background-color: transparent;
   z-index: 1000;
+  cursor: default;
 }
 
 .context-menu-root {

@@ -1,11 +1,38 @@
 <template>
-  <div ref="root"></div>
+  <div style="height: 100%">
+    <div ref="voiceElements"></div>
+    <div class="voice-container">
+      <span>
+        <span>
+          <div id="connection">
+            <font-awesome-icon :icon="['fas', 'signal']" /> 음성 연결됨
+          </div>
+          <div id="channel">{{ joinedVoiceChannel }}</div>
+        </span>
+      </span>
+      <span>
+        <div class="icon" @click.stop="partVoiceChannel">
+          <font-awesome-icon :icon="['fas', 'phone-slash']" />
+        </div>
+      </span>
+    </div>
+  </div>
 </template>
 
 <script>
-import { relayICECandidate, relaySessionDescription } from "../../socket/voice";
+import {
+  relayICECandidate,
+  relaySessionDescription,
+  part,
+} from "../../socket/voice";
 
 export default {
+  props: {
+    voiceChannels: {
+      type: Array,
+      require: true,
+    },
+  },
   data() {
     return {
       localMediaStream: null,
@@ -14,34 +41,48 @@ export default {
     };
   },
   methods: {
-    setupLocalMedia() {
-      navigator.getUserMedia(
-        { audio: true, video: false },
-        (stream) => {
+    async setupLocalMedia() {
+      if (this.localMediaStream === null || !this.localMediaStream.active) {
+        let stream = null;
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            audio: true,
+            video: false,
+          });
           console.log("Access granted to audio");
           this.localMediaStream = stream;
-        },
-        () => {
-          console.log("Access denied for audio");
+        } catch (err) {
+          console.log("Access denied for audio", err);
           alert(
             "You chose not to provide access to the microphone, voice chat will not work."
           );
         }
-      );
+      }
+    },
+    async closeLocalMedia() {
+      if (this.localMediaStream !== null) {
+        this.localMediaStream.getTracks().forEach((track) => {
+          track.stop();
+        });
+        this.localMediaStream = null;
+      }
+    },
+    partVoiceChannel() {
+      part();
     },
     addPeerAudioElement(stream) {
-      const root = this.$refs.root;
+      const voiceElements = this.$refs.voiceElements;
       let peerAudioElement = new Audio();
       peerAudioElement.autoplay = true;
       peerAudioElement.muted = false;
       peerAudioElement.controls = true;
       peerAudioElement.srcObject = stream;
-      root.appendChild(peerAudioElement);
+      voiceElements.appendChild(peerAudioElement);
       return peerAudioElement;
     },
   },
   sockets: {
-    addPeer(data) {
+    async addPeer(data) {
       console.log("addPeer", data);
 
       const { peerId } = data;
@@ -69,12 +110,16 @@ export default {
 
       peerConnection.onaddstream = (event) => {
         console.log("onAddStream", event);
-        this.peerMediaElements[peerId] = this.addPeerAudioElement(
-          event.stream
-        );
+        this.peerMediaElements[peerId] = this.addPeerAudioElement(event.stream);
       };
 
-      peerConnection.addStream(this.localMediaStream);
+      if (this.localMediaStream === null) {
+        await this.setupLocalMedia();
+      }
+
+      if (this.localMediaStream !== null) {
+        peerConnection.addStream(this.localMediaStream);
+      }
 
       if (data.shouldCreateOffer) {
         console.log("Creating RTC offer to ", peerId);
@@ -175,18 +220,69 @@ export default {
       this.peers = {};
       this.peerMediaElements = {};
     },
+    async voiceChannelJoined(data) {
+      if (data.socketId === this.$socket.client.id) {
+        await this.setupLocalMedia();
+        this.$store.commit("setJoinedVoiceChannel", data.channelId);
+      }
+    },
+    async voiceChannelParted(data) {
+      if (data.socketId === this.$socket.client.id) {
+        this.$store.commit("clearJoinedVoiceChannel");
+        await this.closeLocalMedia();
+      }
+    },
   },
-  mounted() {
+  computed: {
+    joinedVoiceChannel() {
+      const channel = this.voiceChannels.find(
+        (elem) => elem._id === this.$store.getters.joinedVoiceChannel
+      );
+      if (channel) {
+        return channel.channelName;
+      } else {
+        return "";
+      }
+    },
+  },
+  async mounted() {
     const supported = "getUserMedia" in navigator;
     this.$store.commit("setVoiceChatSupported", supported);
     if (!supported) {
       console.error("Unfortunately we can't get access to your mic");
     } else {
-      this.setupLocalMedia();
+      //await this.setupLocalMedia();
     }
   },
 };
 </script>
 
-<style>
+<style scoped>
+.voice-container {
+  display: flex;
+  justify-content: space-between;
+  align-content: center;
+  align-items: center;
+  height: 100%;
+  font-size: 14px;
+  font-weight: bold;
+  padding: 0px 10px;
+}
+
+.voice-container #connection {
+  color: #4fdc7c;
+}
+
+.voice-container #channel {
+  color: #b9bbbe;
+}
+
+.icon {
+  color: #b9bbbe;
+  font-size: 14px;
+  transition: 0.2s;
+}
+.icon:hover {
+  color: #dcddde;
+}
 </style>

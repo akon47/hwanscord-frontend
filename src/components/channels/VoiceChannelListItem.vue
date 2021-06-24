@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="root" :class="{ selected: isJoined }" @click="click">
+    <div class="root" :class="{ selected: isJoined }" @click.stop="click">
       <span class="header">
         <font-awesome-icon :icon="['fas', 'volume-up']" style="color: gray" />
         {{ channelData.channelName }}
@@ -28,40 +28,40 @@
 import ContextMenu from "../common/ContextMenu.vue";
 import {
   modifyVoiceChannel,
-  deleteVoiceChannel
+  deleteVoiceChannel,
 } from "../../api/voiceChannels";
-import { join } from "../../socket/voice";
+import { join, getVoiceChannelPeers } from "../../socket/voice";
 import VoiceChannelUserItem from "./VoiceChannelUserItem.vue";
 
 export default {
   components: {
     ContextMenu,
-    VoiceChannelUserItem
+    VoiceChannelUserItem,
   },
   props: {
     channelData: {
       type: Object,
-      require: true
+      require: true,
     },
     users: {
       type: Array,
-      require: true
-    }
+      require: true,
+    },
   },
   data() {
     return {
       isMenuOpened: false,
       menuItems: [
         { header: "수정", callback: () => this.modify() },
-        { header: "삭제", callback: () => this.delete() }
+        { header: "삭제", callback: () => this.delete() },
       ],
-      peers: []
+      peers: [],
     };
   },
   methods: {
     click() {
       if (!this.isJoined) {
-        join(this.channelData._id, { username: this.$store.state.username });
+        join(this.channelData._id);
       }
     },
     menuClick() {
@@ -78,7 +78,7 @@ export default {
     },
     async delete() {
       await deleteVoiceChannel(this.channelData._id);
-    }
+    },
   },
   computed: {
     isMyChannel() {
@@ -87,10 +87,10 @@ export default {
     isJoined() {
       return (
         this.peers.findIndex(
-          elem => elem.socketId === this.$socket.client.id
+          (elem) => elem.socketId === this.$socket.client.id
         ) >= 0
       );
-    }
+    },
   },
   sockets: {
     voiceChannelJoined(data) {
@@ -101,14 +101,22 @@ export default {
     voiceChannelParted(data) {
       if (data.channelId === this.channelData._id) {
         const index = this.peers.findIndex(
-          elem => elem.socketId === data.socketId
+          (elem) => elem.socketId === data.socketId
         );
         if (index >= 0) {
           this.peers.splice(index, 1);
         }
       }
-    }
-  }
+    },
+    getVoiceChannelPeers(data) {
+      if (data.channelId === this.channelData._id) {
+        this.peers = data.peers.slice();
+      }
+    },
+  },
+  created() {
+    getVoiceChannelPeers({ channel: this.channelData._id });
+  },
 };
 </script>
 

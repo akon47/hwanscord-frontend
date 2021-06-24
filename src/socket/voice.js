@@ -16,4 +16,8 @@ function relaySessionDescription(data) {
     socket.emit('relaySessionDescription', data);
 }
 
-export { join, part, relayICECandidate, relaySessionDescription };
+function getVoiceChannelPeers(data) {
+    socket.emit('getVoiceChannelPeers', data);
+}
+
+export { join, part, relayICECandidate, relaySessionDescription, getVoiceChannelPeers };

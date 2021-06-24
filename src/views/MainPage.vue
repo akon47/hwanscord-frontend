@@ -3,20 +3,16 @@
     <loading-spinner v-if="isLoading"></loading-spinner>
     <div v-else class="h-100">
       <div class="channel-area" v-if="!$isMobile()">
-        <channel-list
-          :currentChannelId="channelId"
-          :channels="channels"
-          :voiceChannels="voiceChannels"
-          :users="users"
-        ></channel-list>
-        <voice-chat />
-      </div>
-      <div class="message-area" :class="{ mobile: $isMobile() }">
-        <chat-room :currentChannelId="channelId" :users="users"></chat-room>
-      </div>
-      <div class="user-area" v-if="!$isMobile()">
-        <div class="user-list">
-          <user-list :users="users"></user-list>
+        <div class="channel-list">
+          <channel-list
+            :currentChannelId="channelId"
+            :channels="channels"
+            :voiceChannels="voiceChannels"
+            :users="users"
+          ></channel-list>
+        </div>
+        <div class="voice-chat" :class="{ joined: isVoiceChannelJoined }">
+          <voice-chat :voiceChannels="voiceChannels"/>
         </div>
         <div class="current-info">
           <div class="avatar" :style="{ backgroundImage: `url(${avatarUrl})` }">
@@ -48,6 +44,14 @@
           </div>
         </div>
       </div>
+      <div class="message-area" :class="{ mobile: $isMobile() }">
+        <chat-room :currentChannelId="channelId" :users="users"></chat-room>
+      </div>
+      <div class="user-area" v-if="!$isMobile()">
+        <div class="user-list">
+          <user-list :users="users"></user-list>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -62,7 +66,7 @@ import { fetchUsers } from "../api/users";
 import { uploadAvatar } from "../api/avatar";
 import { apiUrl } from "../api/index";
 import ChannelList from "../components/channels/ChannelList.vue";
-import VoiceChat from '../components/voice/VoiceChat.vue';
+import VoiceChat from "../components/voice/VoiceChat.vue";
 
 export default {
   components: {
@@ -96,6 +100,9 @@ export default {
       } catch (error) {
         return null;
       }
+    },
+    isVoiceChannelJoined() {
+      return this.$store.getters.isVoiceChannelJoined;
     },
   },
   methods: {
@@ -208,11 +215,36 @@ export default {
 
 <style scoped>
 div.channel-area {
+  display: flex;
+  position: relative;
   width: 230px;
   height: 100%;
   box-sizing: border-box;
   background: #2f3136;
   float: left;
+  align-content: flex-start;
+  align-items: stretch;
+  flex-direction: column;
+}
+
+div.channel-list {
+  position: relative;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+div.voice-chat {
+  position: relative;
+  background-color: rgb(41, 43, 47);
+  box-sizing: border-box;
+  overflow: hidden;
+  flex: 0 0 0px;
+}
+
+div .joined {
+  flex: 0 0 52px;
+  border-bottom: 1px solid rgb(54, 55, 59);
 }
 
 div.message-area {
@@ -224,26 +256,35 @@ div.message-area {
 }
 
 div.user-area {
+  display: flex;
+  position: relative;
   width: 230px;
   height: 100%;
   float: right;
   box-sizing: border-box;
   background: #2f3136;
+  align-content: flex-start;
+  align-items: stretch;
+  flex-direction: column;
 }
 
 div.mobile {
   width: 100%;
 }
 
-.user-list {
-  height: calc(100% - 70px);
+div.user-list {
+  position: relative;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .current-info {
-  display: flex;
-  height: 70px;
+  position: relative;
   background-color: #292b2f;
-  user-select: none;
+  box-sizing: border-box;
+  overflow: hidden;
+  flex: 0 0 70px;
 }
 
 .avatar {

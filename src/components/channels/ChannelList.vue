@@ -100,20 +100,4 @@ export default {
   overflow-y: auto;
   overflow-x: hidden;
 }
-
-.user-list::-webkit-scrollbar {
-  width: 10px;
-}
-.user-list::-webkit-scrollbar-thumb {
-  background-color: #212121;
-  border-radius: 10px;
-  background-clip: padding-box;
-  border: 2px solid transparent;
-}
-.user-list::-webkit-scrollbar-track {
-  background-color: #00000030;
-  border-radius: 10px;
-  background-clip: padding-box;
-  border: 2px solid transparent;
-}
 </style>

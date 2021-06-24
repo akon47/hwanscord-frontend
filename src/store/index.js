@@ -16,10 +16,20 @@ export default new Vuex.Store({
     username: getUserFromLocalStorage() || "",
     token: getTokenFromLocalStorage() || "",
     voiceChatSupported: false,
+    joinedVoiceChannel:  "",
   },
   getters: {
     isLogin(state) {
       return state.username !== "";
+    },
+    isVoiceChatSupported(state) {
+      return state.voiceChatSupported;
+    },
+    isVoiceChannelJoined(state) {
+      return state.joinedVoiceChannel !== "";
+    },
+    joinedVoiceChannel(state) {
+      return state.joinedVoiceChannel;
     }
   },
   mutations: {
@@ -37,6 +47,12 @@ export default new Vuex.Store({
     },
     setVoiceChatSupported(state, supported) {
       state.voiceChatSupported = supported;
+    },
+    setJoinedVoiceChannel(state, channel) {
+      state.joinedVoiceChannel = channel;
+    },
+    clearJoinedVoiceChannel(state) {
+      state.joinedVoiceChannel = "";
     }
   },
   actions: {
