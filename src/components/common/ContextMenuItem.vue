@@ -36,7 +36,7 @@ export default {
 }
 
 .menu-item:hover {
-  background-color: rgb(92, 110, 177);
+  background-color: rgb(71, 82, 196);
   color: white;
 }
 </style>

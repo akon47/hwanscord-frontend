@@ -49,7 +49,12 @@
         v-model="isMenuOpened"
       />
 
-      <div v-if="isMyMessage" class="menu" @click="menuClick">
+      <div
+        v-if="isMyMessage"
+        class="menu"
+        @click="menuClick"
+        v-tooltip="'메세지 편집'"
+      >
         <font-awesome-icon class="icon" :icon="['fas', 'bars']" />
       </div>
     </div>
@@ -62,7 +67,10 @@ import ContextMenu from "../common/ContextMenu.vue";
 import { deleteMessage, modifyMessage } from "../../api/messages";
 
 export default {
-  components: { Avatar, ContextMenu },
+  components: {
+    Avatar,
+    ContextMenu,
+  },
   data() {
     return {
       isImage: false,
@@ -242,7 +250,7 @@ export default {
 
 .menu:hover {
   color: #dcddde;
-  box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.6);
+  box-shadow: rgba(4, 4, 5, 0.15) 0px 0px 0px 1px;
 }
 
 .root:hover > .menu {

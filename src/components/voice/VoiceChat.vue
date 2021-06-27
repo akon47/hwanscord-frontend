@@ -1,10 +1,10 @@
 <template>
   <div style="height: 100%">
-    <div ref="voiceElements"></div>
+    <div class="audio-elements" ref="voiceElements"></div>
     <div class="voice-container">
       <span>
         <span>
-          <div v-if="!isLoading" id="connection">
+          <div v-if="!isLoading && !$store.getters.isVoiceChannelJoining" id="connection">
             <font-awesome-icon :icon="['fas', 'signal']" /> 음성 연결됨
           </div>
           <div v-else id="loading-message">
@@ -43,39 +43,12 @@ export default {
   },
   data() {
     return {
-      localMediaStream: null,
       peers: {},
       peerMediaElements: {},
       isLoading: false
     };
   },
   methods: {
-    async setupLocalMedia() {
-      if (this.localMediaStream === null || !this.localMediaStream.active) {
-        let stream = null;
-        try {
-          stream = await navigator.mediaDevices.getUserMedia({
-            audio: true,
-            video: false
-          });
-          console.log("Access granted to audio");
-          this.localMediaStream = stream;
-        } catch (error) {
-          console.log("Access denied for audio", error);
-          alert(
-            "You chose not to provide access to the microphone, voice chat will not work."
-          );
-        }
-      }
-    },
-    async closeLocalMedia() {
-      if (this.localMediaStream !== null) {
-        this.localMediaStream.getTracks().forEach(track => {
-          track.stop();
-        });
-        this.localMediaStream = null;
-      }
-    },
     partVoiceChannel() {
       part();
     },
@@ -84,7 +57,7 @@ export default {
       let peerAudioElement = new Audio();
       peerAudioElement.autoplay = true;
       peerAudioElement.muted = false;
-      peerAudioElement.controls = true;
+      peerAudioElement.controls = false;
       peerAudioElement.srcObject = stream;
       voiceElements.appendChild(peerAudioElement);
       return peerAudioElement;
@@ -94,19 +67,36 @@ export default {
     async addPeer(data) {
       console.log("addPeer", data);
 
+      if (this.localMediaStream === null) {
+        await this.setupLocalMedia();
+      }
+
       const { peerId } = data;
       if (peerId in this.peers) {
+        alert("peerId in this.peers");
         return;
       }
 
       let peerConnection = new RTCPeerConnection(
-        { iceServers: [{ url: "stun:stun.l.google.com:19302" }] },
-        { optional: [{ DtlsSrtpKeyAgreement: true }] }
+        {
+          iceServers: [
+            {
+              urls: "stun:stun.l.google.com:19302"
+            },
+            {
+              urls: "turn:kimhwan.kr:3478?transport=tcp",
+              credential: "turn",
+              username: "turn"
+            }
+          ]
+        }
       );
+
       this.peers[peerId] = peerConnection;
 
       peerConnection.onicecandidate = event => {
         if (event.candidate) {
+          console.log("onicecandidate", event);
           relayICECandidate({
             peerId: peerId,
             iceCandidate: {
@@ -122,37 +112,32 @@ export default {
         this.peerMediaElements[peerId] = this.addPeerAudioElement(event.stream);
       };
 
-      if (this.localMediaStream === null) {
-        await this.setupLocalMedia();
-      }
-
       if (this.localMediaStream !== null) {
-        peerConnection.addStream(this.localMediaStream);
+        //peerConnection.addStream(this.localMediaStream); // https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/addStream
+        this.$store.getters.getLocalMediaStream
+          .getTracks()
+          .forEach(track =>
+            peerConnection.addTrack(track, this.$store.getters.getLocalMediaStream)
+          );
       }
 
       if (data.shouldCreateOffer) {
         console.log("Creating RTC offer to ", peerId);
-        peerConnection.createOffer(
-          localDescription => {
-            console.log("Local offer description is: ", localDescription);
-            peerConnection.setLocalDescription(
-              localDescription,
-              () => {
-                relaySessionDescription({
-                  peerId: peerId,
-                  sessionDescription: localDescription
-                });
-                console.log("Offer setLocalDescription succeeded");
-              },
-              () => {
-                alert("Offer setLocalDescription failed!");
-              }
-            );
-          },
-          error => {
-            console.log("Error sending offer: ", error);
-          }
-        );
+
+        try {
+          const localDescription = await peerConnection.createOffer();
+          console.log("Local offer description is: ", localDescription);
+          await peerConnection.setLocalDescription(localDescription);
+          await relaySessionDescription({
+            peerId: peerId,
+            sessionDescription: localDescription
+          });
+        } catch (error) {
+          alert("Error sending offer: ", error);
+          console.log("Error sending offer: ", error);
+        }
+
+        console.log("addPeer ended --");
       }
     },
     removePeer(data) {
@@ -175,8 +160,11 @@ export default {
       const { peerId, sessionDescription } = data;
       const peer = this.peers[peerId];
 
+      console.log(peerId, sessionDescription);
+      console.log(peer);
+
       var desc = new RTCSessionDescription(sessionDescription);
-      peer.setRemoteDescription(
+      const stuff = peer.setRemoteDescription(
         desc,
         () => {
           console.log("setRemoteDescription succeeded");
@@ -210,12 +198,13 @@ export default {
           console.log("setRemoteDescription error: ", error);
         }
       );
+      console.log("setRemoteDescription", stuff);
     },
     iceCandidate(data) {
       console.log("iceCandidate", data);
 
-      const peer = this.peers[data.peerId];
-      const iceCandidate = data.iceCandidate;
+      const { peerId, iceCandidate } = data;
+      const peer = this.peers[peerId];
       peer.addIceCandidate(new RTCIceCandidate(iceCandidate));
     },
     disconnect() {
@@ -234,7 +223,6 @@ export default {
         try {
           this.isLoading = true;
           this.$store.commit("setJoinedVoiceChannel", data.channelId);
-          await this.setupLocalMedia();
         } catch (error) {
           console.log(error);
         } finally {
@@ -245,7 +233,10 @@ export default {
     async voiceChannelParted(data) {
       if (data.socketId === this.$socket.client.id) {
         this.$store.commit("clearJoinedVoiceChannel");
-        await this.closeLocalMedia();
+        this.$store.dispatch("closeLocalMedia");
+        new Audio(
+          "https://discord.com/assets/7e125dc075ec6e5ae796e4c3ab83abb3.mp3"
+        ).play();
       }
     },
     voiceChannelDeleted(data) {
@@ -267,13 +258,12 @@ export default {
     }
   },
   async mounted() {
-    const supported = "getUserMedia" in navigator;
+    const supported = "mediaDevices" in navigator;
     this.$store.commit("setVoiceChatSupported", supported);
     if (!supported) {
+      alert("Unfortunately we can't get access to your mic");
       console.error("Unfortunately we can't get access to your mic");
-    } else {
-      //await this.setupLocalMedia();
-    }
+    } 
   }
 };
 </script>
@@ -298,7 +288,6 @@ export default {
   color: rgb(250, 168, 26);
 }
 
-
 .voice-container #channel {
   color: #b9bbbe;
 }
@@ -313,5 +302,9 @@ export default {
 .icon:hover {
   color: #dcddde;
   background-color: rgb(51, 54, 59);
+}
+
+.audio-elements audio {
+  display: none;
 }
 </style>

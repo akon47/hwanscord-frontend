@@ -2,7 +2,7 @@
   <div class="h-100">
     <loading-spinner v-if="isLoading"></loading-spinner>
     <div v-else class="h-100">
-      <div class="channel-area" v-if="!$isMobile()">
+      <div class="channel-area" :class="{ mobile: $isMobile(), 'mobile-selected': isChannelAreaSelected }">
         <div class="channel-list">
           <channel-list
             :channelId="channelId"
@@ -11,7 +11,7 @@
             :users="users"
           ></channel-list>
         </div>
-        <div class="voice-chat" :class="{ joined: isVoiceChannelJoined }">
+        <div class="voice-chat" :class="{ joined: isVoiceChannelJoined || isVoiceChannelJoining }">
           <voice-chat :voiceChannels="voiceChannels" />
         </div>
         <div class="current-info">
@@ -44,10 +44,10 @@
           </div>
         </div>
       </div>
-      <div class="message-area" :class="{ mobile: $isMobile() }">
+      <div class="message-area" :class="{ mobile: $isMobile() }" v-show="!$isMobile() || (!isChannelAreaSelected && !isUserAreaSelected)">
         <chat-room :channelId="channelId" :users="users"></chat-room>
       </div>
-      <div class="user-area" v-if="!$isMobile()">
+      <div class="user-area" :class="{ mobile: $isMobile(), 'mobile-selected': isUserAreaSelected }">
         <div class="user-list">
           <user-list :users="users"></user-list>
         </div>
@@ -101,8 +101,17 @@ export default {
         return null;
       }
     },
+    isVoiceChannelJoining() {
+      return this.$store.getters.isVoiceChannelJoining;
+    },
     isVoiceChannelJoined() {
       return this.$store.getters.isVoiceChannelJoined;
+    },
+    isChannelAreaSelected() {
+      return this.$store.getters.getMobileVisiblePage === "channels" ;
+    },
+    isUserAreaSelected() {
+      return this.$store.getters.getMobileVisiblePage === "users" ;
     },
   },
   methods: {
@@ -220,7 +229,7 @@ export default {
 <style scoped>
 div.channel-area {
   display: flex;
-  position: relative;
+  
   width: 230px;
   height: 100%;
   box-sizing: border-box;
@@ -261,7 +270,6 @@ div.message-area {
 
 div.user-area {
   display: flex;
-  position: relative;
   width: 230px;
   height: 100%;
   float: right;
@@ -274,6 +282,38 @@ div.user-area {
 
 div.mobile {
   width: 100%;
+}
+
+div.channel-area.mobile {
+  position: absolute;
+  height: calc(100% - 60px);
+  z-index: 0;
+  opacity: 0;
+  transition: 0.3s;
+}
+
+div.user-area.mobile {
+  position: absolute;
+  height: calc(100% - 60px);
+  z-index: 0;
+  opacity: 0;
+  transition: 0.3s;
+}
+
+div.user-area.mobile-selected {
+  opacity: 1;
+  z-index: 5000;
+}
+
+div.message-area.mobile {
+  position: absolute;
+  height: calc(100% - 60px);
+  z-index: 3000;
+}
+
+div.channel-area.mobile-selected {
+  opacity: 1;
+  z-index: 5000;
 }
 
 div.user-list {

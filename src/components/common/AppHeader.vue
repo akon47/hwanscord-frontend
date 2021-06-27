@@ -1,10 +1,24 @@
 <template>
   <header>
-    <div>
+    <div v-if="!$isMobile() || !isUserLogin">
       <router-link v-bind:to="logoLink" class="logo">
         HWANSCORD
         <span v-if="isUserLogin">by {{ $store.state.username }}</span>
       </router-link>
+    </div>
+    <div v-else class="mobile-header">
+      <font-awesome-icon
+        :icon="['fas', 'bars']"
+        class="header-icon"
+        @click.stop="selectChannelList"
+        :class="{selected: isChannelAreaSelected}"
+      />
+      <font-awesome-icon
+        :icon="['fas', 'users']"
+        class="header-icon"
+        @click.stop="selectUserList"
+        :class="{selected: isUserAreaSelected}"
+      />
     </div>
     <div class="navigations">
       <template v-if="isUserLogin">
@@ -28,7 +42,13 @@ export default {
     },
     logoLink() {
       return this.$store.getters.isLogin ? "/main/@me" : "/";
-    }
+    },
+    isChannelAreaSelected() {
+      return this.$store.getters.getMobileVisiblePage === "channels" ;
+    },
+    isUserAreaSelected() {
+      return this.$store.getters.getMobileVisiblePage === "users" ;
+    },
   },
   methods: {
     logoutUser() {
@@ -37,8 +57,14 @@ export default {
       }
       this.$store.dispatch("Signout");
       this.$router.push("/signin");
-    }
-  }
+    },
+    selectChannelList() {
+      this.$store.commit("setMobileVisiblePage", this.$store.getters.getMobileVisiblePage === "channels" ? "" : "channels");
+    },
+    selectUserList() {
+      this.$store.commit("setMobileVisiblePage", this.$store.getters.getMobileVisiblePage === "users" ? "" : "users");
+    },
+  },
 };
 </script>
 
@@ -89,5 +115,16 @@ a.logo {
 a.router-link-exact-active {
   color: white;
   font-weight: bold;
+}
+
+.mobile-header {
+  color: darkgray;
+}
+
+.mobile-header .header-icon {
+  margin: 6px;
+}
+.mobile-header .selected {
+  color: white;
 }
 </style>

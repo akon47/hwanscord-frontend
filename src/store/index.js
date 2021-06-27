@@ -16,7 +16,11 @@ export default new Vuex.Store({
     username: getUserFromLocalStorage() || "",
     token: getTokenFromLocalStorage() || "",
     voiceChatSupported: false,
-    joinedVoiceChannel:  "",
+    joinedVoiceChannel: "",
+    userListVisible: true,
+    mobileVisiblePage: "channels",
+    localMediaStream: null,
+    isJoiningVoiceChannel: false
   },
   getters: {
     isLogin(state) {
@@ -28,8 +32,20 @@ export default new Vuex.Store({
     isVoiceChannelJoined(state) {
       return state.joinedVoiceChannel !== "";
     },
+    isVoiceChannelJoining(state) {
+      return state.isJoiningVoiceChannel;
+    },
     joinedVoiceChannel(state) {
       return state.joinedVoiceChannel;
+    },
+    isUserListVisible(state) {
+      return state.userListVisible;
+    },
+    getMobileVisiblePage(state) {
+      return state.mobileVisiblePage;
+    },
+    getLocalMediaStream(state) {
+      return state.localMediaStream;
     }
   },
   mutations: {
@@ -41,7 +57,7 @@ export default new Vuex.Store({
     },
     setToken(state, token) {
       state.token = token;
-      if(socket.disconnected) {
+      if (socket.disconnected) {
         socket.connect();
       }
     },
@@ -51,8 +67,30 @@ export default new Vuex.Store({
     setJoinedVoiceChannel(state, channel) {
       state.joinedVoiceChannel = channel;
     },
+    setJoiningVoiceChannelState(state, isJoining) {
+      state.isJoiningVoiceChannel = isJoining;
+    },
     clearJoinedVoiceChannel(state) {
       state.joinedVoiceChannel = "";
+    },
+    showUserList(state) {
+      state.userListVisible = true;
+    },
+    hideUserList(state) {
+      state.userListVisible = false;
+    },
+    setMobileVisiblePage(state, page) {
+      state.mobileVisiblePage = page;
+    },
+    setLocalMediaStream(state, stream) {
+      state.localMediaStream = stream;
+    },
+    clearLocalMediaStream(state) {
+      state.localMediaStream.getTracks().forEach(track => {
+        track.stop();
+      });
+      state.localMediaStream = null;
+      state.localMediaStream = null;
     }
   },
   actions: {
@@ -78,5 +116,25 @@ export default new Vuex.Store({
       saveTokenToLocalStorage("");
       saveUserToLocalStorage("");
     },
+    async setupLocalMedia({ commit }) {
+      let stream = null;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+          video: false
+        });
+        commit("setLocalMediaStream", stream);
+        console.log("Access granted to audio");
+        return stream;
+      } catch (error) {
+        console.log("Access denied for audio", error);
+        return null;
+      }
+    },
+    async closeLocalMedia({ commit }) {
+      if (this.localMediaStream !== null) {
+        commit("clearLocalMediaStream");
+      }
+    }
   }
 });

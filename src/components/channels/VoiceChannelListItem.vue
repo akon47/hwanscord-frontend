@@ -29,7 +29,7 @@
 import ContextMenu from "../common/ContextMenu.vue";
 import {
   modifyVoiceChannel,
-  deleteVoiceChannel,
+  deleteVoiceChannel
 } from "../../api/voiceChannels";
 import { join, getVoiceChannelPeers } from "../../socket/voice";
 import VoiceChannelUserItem from "./VoiceChannelUserItem.vue";
@@ -37,32 +37,45 @@ import VoiceChannelUserItem from "./VoiceChannelUserItem.vue";
 export default {
   components: {
     ContextMenu,
-    VoiceChannelUserItem,
+    VoiceChannelUserItem
   },
   props: {
     channelData: {
       type: Object,
-      require: true,
+      require: true
     },
     users: {
       type: Array,
-      require: true,
-    },
+      require: true
+    }
   },
   data() {
     return {
       isMenuOpened: false,
       menuItems: [
         { header: "수정", callback: () => this.modify() },
-        { header: "삭제", callback: () => this.delete() },
+        { header: "삭제", callback: () => this.delete() }
       ],
-      peers: [],
+      peers: []
     };
   },
   methods: {
-    click() {
+    async click() {
       if (!this.isJoined) {
-        join(this.channelData._id);
+        this.$store.commit("setJoiningVoiceChannelState", true);
+        try {
+          new Audio(
+            "https://discord.com/assets/5dd43c946894005258d85770f0d10cff.mp3"
+          ).play();
+          if (this.$store.getters.getLocalMediaStream === null) {
+            await this.$store.dispatch("setupLocalMedia");
+          }
+          join(this.channelData._id);
+        } catch (error) {
+          console.log(error);
+        } finally {
+          this.$store.commit("setJoiningVoiceChannelState", false);
+        }
       }
     },
     menuClick() {
@@ -79,7 +92,7 @@ export default {
     },
     async delete() {
       await deleteVoiceChannel(this.channelData._id);
-    },
+    }
   },
   computed: {
     isMyChannel() {
@@ -88,10 +101,10 @@ export default {
     isJoined() {
       return (
         this.peers.findIndex(
-          (elem) => elem.socketId === this.$socket.client.id
+          elem => elem.socketId === this.$socket.client.id
         ) >= 0
       );
-    },
+    }
   },
   sockets: {
     voiceChannelJoined(data) {
@@ -102,7 +115,7 @@ export default {
     voiceChannelParted(data) {
       if (data.channelId === this.channelData._id) {
         const index = this.peers.findIndex(
-          (elem) => elem.socketId === data.socketId
+          elem => elem.socketId === data.socketId
         );
         if (index >= 0) {
           this.peers.splice(index, 1);
@@ -113,11 +126,11 @@ export default {
       if (data.channelId === this.channelData._id) {
         this.peers = data.peers.slice();
       }
-    },
+    }
   },
   created() {
     getVoiceChannelPeers({ channel: this.channelData._id });
-  },
+  }
 };
 </script>
 
@@ -173,5 +186,7 @@ export default {
   background-color: rgb(57, 60, 67);
 }
 
-:focus { outline: none; }
+:focus {
+  outline: none;
+}
 </style>
