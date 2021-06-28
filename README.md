@@ -1,24 +1,4 @@
 # hwanscord-frontend
 
-## Project setup
-```
-npm install
-```
-
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
-
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+## 다음 주소에서 확인 가능
+https://kimhwan.kr/hwanscord/hwanscord-frontend/dist/index.html
