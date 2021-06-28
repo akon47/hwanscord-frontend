@@ -17,6 +17,12 @@
   </div>
   <div v-else class="h-100">
     <loading-spinner v-if="isLoading" />
+    <div v-else class="h-100">
+      <div class="invalid-message">채팅채널을 선택하여 참가하기</div>
+      <div class="about-parent">
+        <about></about>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -25,11 +31,13 @@ import ChatListItem from "./ChatListItem.vue";
 import ChatTextBox from "./ChatTextBox.vue";
 import { fetchMessages } from "../../api/messages";
 import LoadingSpinner from "../common/LoadingSpinner.vue";
+import About from "../About.vue";
 export default {
   components: {
     ChatTextBox,
     ChatListItem,
     LoadingSpinner,
+    About,
   },
   data() {
     return {
@@ -146,5 +154,25 @@ export default {
   border-radius: 10px;
   background-clip: padding-box;
   border: 5px solid transparent;
+}
+
+.invalid-message {
+  display: flex;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  margin: 10px;
+  margin-top: 50px;
+  border-radius: 5px;
+  padding: 10px;
+  background-color: #00000020;
+}
+
+.about-parent {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <div class="menu-item" @click="click">
+  <div class="menu-item" @click.stop="click">
     {{ header }}
   </div>
 </template>

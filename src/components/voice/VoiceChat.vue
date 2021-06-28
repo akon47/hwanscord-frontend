@@ -4,7 +4,10 @@
     <div class="voice-container">
       <span>
         <span>
-          <div v-if="!isLoading && !$store.getters.isVoiceChannelJoining" id="connection">
+          <div
+            v-if="!isLoading && !$store.getters.isVoiceChannelJoining"
+            id="connection"
+          >
             <font-awesome-icon :icon="['fas', 'signal']" /> 음성 연결됨
           </div>
           <div v-else id="loading-message">
@@ -33,6 +36,7 @@ import {
   relaySessionDescription,
   part
 } from "../../socket/voice";
+import { playVoiceChannelDisconnectionSound } from "../../audio/index.js";
 
 export default {
   props: {
@@ -77,20 +81,18 @@ export default {
         return;
       }
 
-      let peerConnection = new RTCPeerConnection(
-        {
-          iceServers: [
-            {
-              urls: "stun:stun.l.google.com:19302"
-            },
-            {
-              urls: "turn:kimhwan.kr:3478?transport=tcp",
-              credential: "turn",
-              username: "turn"
-            }
-          ]
-        }
-      );
+      let peerConnection = new RTCPeerConnection({
+        iceServers: [
+          {
+            urls: "stun:stun.l.google.com:19302"
+          },
+          {
+            urls: "turn:kimhwan.kr:3478?transport=tcp",
+            credential: "turn",
+            username: "turn"
+          }
+        ]
+      });
 
       this.peers[peerId] = peerConnection;
 
@@ -117,7 +119,10 @@ export default {
         this.$store.getters.getLocalMediaStream
           .getTracks()
           .forEach(track =>
-            peerConnection.addTrack(track, this.$store.getters.getLocalMediaStream)
+            peerConnection.addTrack(
+              track,
+              this.$store.getters.getLocalMediaStream
+            )
           );
       }
 
@@ -234,9 +239,7 @@ export default {
       if (data.socketId === this.$socket.client.id) {
         this.$store.commit("clearJoinedVoiceChannel");
         this.$store.dispatch("closeLocalMedia");
-        new Audio(
-          "https://discord.com/assets/7e125dc075ec6e5ae796e4c3ab83abb3.mp3"
-        ).play();
+        playVoiceChannelDisconnectionSound();
       }
     },
     voiceChannelDeleted(data) {
@@ -263,7 +266,7 @@ export default {
     if (!supported) {
       alert("Unfortunately we can't get access to your mic");
       console.error("Unfortunately we can't get access to your mic");
-    } 
+    }
   }
 };
 </script>

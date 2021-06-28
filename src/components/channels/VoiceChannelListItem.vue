@@ -33,6 +33,7 @@ import {
 } from "../../api/voiceChannels";
 import { join, getVoiceChannelPeers } from "../../socket/voice";
 import VoiceChannelUserItem from "./VoiceChannelUserItem.vue";
+import { playVoiceChannelConnectionSound } from "../../audio/index.js";
 
 export default {
   components: {
@@ -61,12 +62,10 @@ export default {
   },
   methods: {
     async click() {
-      if (!this.isJoined) {
+      if (!this.isJoined && !this.$store.getters.isVoiceChannelJoining) {
         this.$store.commit("setJoiningVoiceChannelState", true);
         try {
-          new Audio(
-            "https://discord.com/assets/5dd43c946894005258d85770f0d10cff.mp3"
-          ).play();
+          playVoiceChannelConnectionSound();
           if (this.$store.getters.getLocalMediaStream === null) {
             await this.$store.dispatch("setupLocalMedia");
           }
@@ -108,8 +107,11 @@ export default {
   },
   sockets: {
     voiceChannelJoined(data) {
-      if (data.channelId === this.channelData._id) {
+      if (this.channelData._id === data.channelId) {
         this.peers.push({ socketId: data.socketId, user: data.user });
+      }
+      if (this.channelData._id === this.$store.getters.joinedVoiceChannel) {
+        playVoiceChannelConnectionSound();
       }
     },
     voiceChannelParted(data) {
