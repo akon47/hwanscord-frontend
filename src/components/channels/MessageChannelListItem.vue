@@ -50,6 +50,9 @@ export default {
     click() {
       if (!this.isSelected) {
         this.$router.push(`/main/${this.channelData._id}`);
+        if(this.$isMobile()) {
+          this.$store.commit("setMobileVisiblePage", "");
+        }
       }
     },
     menuClick() {

@@ -2,16 +2,16 @@
   <div class="channel-list">
     <div class="channel-type">
       <span>채팅채널</span>
-      <div class="icon" @click="addChannel" v-tooltip="'채널 만들기'" >
+      <div class="icon" @click="addChannel" v-tooltip="'채널 만들기'">
         <font-awesome-icon :icon="['fas', 'plus']" />
       </div>
     </div>
-    <channel-list-item
+    <message-channel-list-item
       v-for="channel in channels"
       :key="channel._id"
       :channelData="channel"
       :channelId="channelId"
-    ></channel-list-item>
+    ></message-channel-list-item>
     <div class="channel-type">
       <span>음성채널</span>
       <div class="icon" @click="addVoiceChannel" v-tooltip="'채널 만들기'">
@@ -25,36 +25,47 @@
       :users="users"
     >
     </voice-channel-list-item>
+    <div class="channel-type">
+      <span>화면공유채널</span>
+      <div
+        class="icon"
+        @click="addScreenShareChannel"
+        v-tooltip="'내 화면 공유하기'"
+      >
+        <font-awesome-icon :icon="['fas', 'plus']" />
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-import ChannelListItem from "./ChannelListItem.vue";
+import MessageChannelListItem from "./MessageChannelListItem.vue";
 import { createChannel } from "../../api/channels";
 import { createVoiceChannel } from "../../api/voiceChannels";
+import { host } from "../../socket/screen-share";
 import VoiceChannelListItem from "./VoiceChannelListItem.vue";
 
 export default {
   components: {
-    ChannelListItem,
-    VoiceChannelListItem
+    MessageChannelListItem,
+    VoiceChannelListItem,
   },
   props: {
     channelId: {
-      type: String
+      type: String,
     },
     channels: {
       type: Array,
-      require: true
+      require: true,
     },
     voiceChannels: {
       type: Array,
-      require: true
+      require: true,
     },
     users: {
       type: Array,
-      require: true
-    }
+      require: true,
+    },
   },
   methods: {
     async addChannel() {
@@ -68,8 +79,12 @@ export default {
       if (channelName) {
         await createVoiceChannel(channelName);
       }
-    }
-  }
+    },
+    async addScreenShareChannel() {
+      //await host();
+      alert("not implemented yet");
+    },
+  },
 };
 </script>
 

@@ -86,10 +86,11 @@ export default new Vuex.Store({
       state.localMediaStream = stream;
     },
     clearLocalMediaStream(state) {
-      state.localMediaStream.getTracks().forEach(track => {
-        track.stop();
-      });
-      state.localMediaStream = null;
+      if(state.localMediaStream) {
+        state.localMediaStream.getTracks().forEach(track => {
+          track.stop();
+        });
+      }
       state.localMediaStream = null;
     }
   },
@@ -132,9 +133,7 @@ export default new Vuex.Store({
       }
     },
     async closeLocalMedia({ commit }) {
-      if (this.localMediaStream !== null) {
-        commit("clearLocalMediaStream");
-      }
+      commit("clearLocalMediaStream");
     }
   }
 });

@@ -44,6 +44,7 @@ export default {
       messages: [],
       isLoading: false,
       isValidChannel: false,
+      disableNextScrollSmooth: true
     };
   },
   props: {
@@ -64,6 +65,7 @@ export default {
         } else {
           try {
             const messageData = await fetchMessages(this.channelId);
+            this.disableNextScrollSmooth = true;
             this.messages = messageData.data.messages;
             this.isValidChannel = true;
           } catch (error) {
@@ -89,7 +91,11 @@ export default {
   },
   watch: {
     messages() {
-      this.$nextTick(() => this.chatScrollToBottom(true));
+      const smooth = !this.disableNextScrollSmooth;
+      this.$nextTick(() => this.chatScrollToBottom(smooth));
+      if(this.disableNextScrollSmooth) {
+        this.disableNextScrollSmooth = false;
+      }
     },
     channelId() {
       this.fetchData();
