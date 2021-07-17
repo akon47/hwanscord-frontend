@@ -65,10 +65,10 @@ export default {
       if (!this.isJoined && !this.$store.getters.isVoiceChannelJoining) {
         this.$store.commit("setJoiningVoiceChannelState", true);
         try {
-          playVoiceChannelConnectionSound();
           if (this.$store.getters.getLocalMediaStream === null) {
             await this.$store.dispatch("setupLocalMedia");
           }
+          playVoiceChannelConnectionSound();
           join(this.channelData._id);
         } catch (error) {
           console.log(error);

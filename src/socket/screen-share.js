@@ -1,15 +1,19 @@
 import socket from "./index.js"
 
-function host() {
-    socket.emit('hostScreenShareChannel');
+function createScreenShareChannel() {
+    socket.emit('createScreenShareChannel');
 }
 
-function join(channelId, data) {
-    socket.emit('joinScreenShareChannel', { channel: channelId, userdata: data });
+function getScreenShareChannels() {
+    socket.emit('getScreenShareChannels');
 }
 
-function part(channelId) {
-    socket.emit('partScreenShareChannel', channelId);
+function relayScreenShareICECandidate(data) {
+    socket.emit('relayScreenShareICECandidate', data);
 }
 
-export { host, join, part };
+function relayScreenShareSessionDescription(data) {
+    socket.emit('relayScreenShareSessionDescription', data);
+}
+
+export { createScreenShareChannel, getScreenShareChannels, relayScreenShareICECandidate, relayScreenShareSessionDescription };

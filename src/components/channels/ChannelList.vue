@@ -35,6 +35,13 @@
         <font-awesome-icon :icon="['fas', 'plus']" />
       </div>
     </div>
+    <screen-share-channel-list-item
+      v-for="screenShareChannel in screenShareChannels"
+      :key="screenShareChannel.channelId"
+      :channelData="screenShareChannel"
+      :users="users"
+    >
+    </screen-share-channel-list-item>
   </div>
 </template>
 
@@ -42,30 +49,37 @@
 import MessageChannelListItem from "./MessageChannelListItem.vue";
 import { createChannel } from "../../api/channels";
 import { createVoiceChannel } from "../../api/voiceChannels";
-import { host } from "../../socket/screen-share";
+import { createScreenShareChannel } from "../../socket/screen-share";
 import VoiceChannelListItem from "./VoiceChannelListItem.vue";
+import ScreenShareChannelListItem from "./ScreenShareChannelListItem.vue";
+import { playVoiceChannelConnectionSound } from "../../audio/index.js";
 
 export default {
   components: {
     MessageChannelListItem,
     VoiceChannelListItem,
+    ScreenShareChannelListItem
   },
   props: {
     channelId: {
-      type: String,
+      type: String
     },
     channels: {
       type: Array,
-      require: true,
+      require: true
+    },
+    screenShareChannels: {
+      type: Array,
+      require: true
     },
     voiceChannels: {
       type: Array,
-      require: true,
+      require: true
     },
     users: {
       type: Array,
-      require: true,
-    },
+      require: true
+    }
   },
   methods: {
     async addChannel() {
@@ -81,10 +95,23 @@ export default {
       }
     },
     async addScreenShareChannel() {
-      //await host();
-      alert("not implemented yet");
-    },
-  },
+      this.$store.commit("setJoiningVoiceChannelState", true);
+      try {
+        if (this.$store.getters.getLocalMediaStream === null) {
+          await this.$store.dispatch("setupLocalMedia");
+        }
+        if (this.$store.getters.getDisplayMediaStream === null) {
+          await this.$store.dispatch("setupDisplayMedia");
+        }
+        await createScreenShareChannel();
+        playVoiceChannelConnectionSound();
+      } catch (error) {
+        console.log(error);
+      } finally {
+        this.$store.commit("setJoiningVoiceChannelState", false);
+      }
+    }
+  }
 };
 </script>
 

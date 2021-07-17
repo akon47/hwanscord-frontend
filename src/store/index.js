@@ -20,6 +20,7 @@ export default new Vuex.Store({
     userListVisible: true,
     mobileVisiblePage: "channels",
     localMediaStream: null,
+    displayMediaStream: null,
     isJoiningVoiceChannel: false
   },
   getters: {
@@ -46,6 +47,9 @@ export default new Vuex.Store({
     },
     getLocalMediaStream(state) {
       return state.localMediaStream;
+    },
+    getDisplayMediaStream(state) {
+      return state.displayMediaStream;
     }
   },
   mutations: {
@@ -92,6 +96,17 @@ export default new Vuex.Store({
         });
       }
       state.localMediaStream = null;
+    },
+    setDisplayMediaStream(state, stream) {
+      state.displayMediaStream = stream;
+    },
+    clearDisplayMediaStream(state) {
+      if(state.displayMediaStream) {
+        state.displayMediaStream.getTracks().forEach(track => {
+          track.stop();
+        });
+      }
+      state.displayMediaStream = null;
     }
   },
   actions: {
@@ -132,8 +147,24 @@ export default new Vuex.Store({
         return null;
       }
     },
+    async setupDisplayMedia({ commit }) {
+      let stream = null;
+      try {
+        stream = await navigator.mediaDevices.getDisplayMedia({
+          audio: false,
+          video: true
+        });
+        commit("setDisplayMediaStream", stream);
+        console.log("Access granted to display");
+        return stream;
+      } catch (error) {
+        console.log("Access denied for display", error);
+        return null;
+      }
+    },
     async closeLocalMedia({ commit }) {
       commit("clearLocalMediaStream");
+      commit("clearDisplayMediaStream");
     }
   }
 });

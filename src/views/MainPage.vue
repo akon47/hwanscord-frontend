@@ -2,16 +2,26 @@
   <div class="h-100">
     <loading-spinner v-if="isLoading"></loading-spinner>
     <div v-else class="h-100">
-      <div class="channel-area" :class="{ mobile: $isMobile(), 'mobile-selected': isChannelAreaSelected }">
+      <div
+        class="channel-area"
+        :class="{
+          mobile: $isMobile(),
+          'mobile-selected': isChannelAreaSelected
+        }"
+      >
         <div class="channel-list">
           <channel-list
             :channelId="channelId"
             :channels="channels"
             :voiceChannels="voiceChannels"
+            :screenShareChannels="screenShareChannels"
             :users="users"
           ></channel-list>
         </div>
-        <div class="voice-chat" :class="{ joined: isVoiceChannelJoined || isVoiceChannelJoining }">
+        <div
+          class="voice-chat"
+          :class="{ joined: isVoiceChannelJoined || isVoiceChannelJoining }"
+        >
           <voice-chat :voiceChannels="voiceChannels" />
         </div>
         <div class="current-info">
@@ -44,10 +54,21 @@
           </div>
         </div>
       </div>
-      <div class="message-area" :class="{ mobile: $isMobile() }" v-show="!$isMobile() || (!isChannelAreaSelected && !isUserAreaSelected)">
-        <chat-room :channelId="channelId" :users="users"></chat-room>
+      <div
+        class="message-area"
+        :class="{ mobile: $isMobile() }"
+        v-show="!$isMobile() || (!isChannelAreaSelected && !isUserAreaSelected)"
+      >
+        <chat-room v-if="!isHostedScreenShareChannel && !isScreenShareChannelJoined" :channelId="channelId" :users="users"></chat-room>
+        <display-share v-show="isHostedScreenShareChannel || isScreenShareChannelJoined"
+          :screenShareChannels="screenShareChannels"
+          :users="users"
+        ></display-share>
       </div>
-      <div class="user-area" :class="{ mobile: $isMobile(), 'mobile-selected': isUserAreaSelected }">
+      <div
+        class="user-area"
+        :class="{ mobile: $isMobile(), 'mobile-selected': isUserAreaSelected }"
+      >
         <div class="user-list">
           <user-list :users="users"></user-list>
         </div>
@@ -62,11 +83,13 @@ import UserList from "../components/UserList.vue";
 import LoadingSpinner from "../components/common/LoadingSpinner.vue";
 import { fetchChannels } from "../api/channels";
 import { fetchVoiceChannels } from "../api/voiceChannels";
+import { getScreenShareChannels } from "../socket/screen-share";
 import { fetchUsers } from "../api/users";
 import { uploadAvatar } from "../api/avatar";
 import { apiUrl } from "../api/index";
 import ChannelList from "../components/channels/ChannelList.vue";
 import VoiceChat from "../components/voice/VoiceChat.vue";
+import DisplayShare from "../components/display/DisplayShare.vue";
 
 export default {
   components: {
@@ -75,26 +98,28 @@ export default {
     LoadingSpinner,
     ChannelList,
     VoiceChat,
+    DisplayShare
   },
   props: {
     channelId: {
-      type: String,
-    },
+      type: String
+    }
   },
   data() {
     return {
       channels: [],
       voiceChannels: [],
+      screenShareChannels: [],
       messages: [],
       users: [],
-      isLoading: false,
+      isLoading: false
     };
   },
   computed: {
     avatarUrl() {
       try {
         const user = this.users.find(
-          (elem) => elem.username === this.$store.state.username
+          elem => elem.username === this.$store.state.username
         );
         return `${apiUrl}${user.avatar.filepath}`;
       } catch (error) {
@@ -108,11 +133,25 @@ export default {
       return this.$store.getters.isVoiceChannelJoined;
     },
     isChannelAreaSelected() {
-      return this.$store.getters.getMobileVisiblePage === "channels" ;
+      return this.$store.getters.getMobileVisiblePage === "channels";
     },
     isUserAreaSelected() {
-      return this.$store.getters.getMobileVisiblePage === "users" ;
+      return this.$store.getters.getMobileVisiblePage === "users";
     },
+    isHostedScreenShareChannel() {
+      return (
+        this.screenShareChannels.findIndex(
+          elem => elem.channelId === this.$socket.client.id
+        ) >= 0
+      );
+    },
+    isScreenShareChannelJoined() {
+      return (
+        this.screenShareChannels.findIndex(
+          elem => elem.channelId === this.$store.getters.joinedVoiceChannel
+        ) >= 0
+      );
+    }
   },
   methods: {
     async fetchData() {
@@ -126,6 +165,8 @@ export default {
 
         const userData = await fetchUsers();
         this.users = userData.data.users;
+
+        await getScreenShareChannels();
       } catch (error) {
         if (this.$socket.client.connected) {
           this.$socket.client.disconnect();
@@ -137,7 +178,7 @@ export default {
       }
     },
     updateUserConnection(data) {
-      const index = this.users.findIndex((elem) => elem._id === data.userId);
+      const index = this.users.findIndex(elem => elem._id === data.userId);
       if (index >= 0) {
         const user = this.users[index];
         user.connections = data.connections;
@@ -145,7 +186,7 @@ export default {
       }
     },
     updateUserAvatar(data) {
-      const index = this.users.findIndex((elem) => elem._id === data.userId);
+      const index = this.users.findIndex(elem => elem._id === data.userId);
       if (index >= 0) {
         const user = this.users[index];
         user.avatar = data.avatar;
@@ -155,7 +196,7 @@ export default {
     async handleFileChange(e) {
       const file = e.target.files[0];
       await uploadAvatar(file);
-    },
+    }
   },
   watch: {
     isLoading() {
@@ -165,7 +206,7 @@ export default {
           this.users = this.users.slice();
         });
       }
-    },
+    }
   },
   created() {
     this.fetchData();
@@ -179,13 +220,13 @@ export default {
       this.channels.push(data);
     },
     channelModified(data) {
-      const index = this.channels.findIndex((elem) => elem._id === data._id);
+      const index = this.channels.findIndex(elem => elem._id === data._id);
       if (index >= 0) {
         this.$set(this.channels, index, data);
       }
     },
     channelDeleted(data) {
-      const index = this.channels.findIndex((elem) => elem._id === data._id);
+      const index = this.channels.findIndex(elem => elem._id === data._id);
       if (index >= 0) {
         this.channels.splice(index, 1);
       }
@@ -198,17 +239,13 @@ export default {
       this.voiceChannels.push(data);
     },
     voiceChannelModified(data) {
-      const index = this.voiceChannels.findIndex(
-        (elem) => elem._id === data._id
-      );
+      const index = this.voiceChannels.findIndex(elem => elem._id === data._id);
       if (index >= 0) {
         this.$set(this.voiceChannels, index, data);
       }
     },
     voiceChannelDeleted(data) {
-      const index = this.voiceChannels.findIndex(
-        (elem) => elem._id === data._id
-      );
+      const index = this.voiceChannels.findIndex(elem => elem._id === data._id);
       if (index >= 0) {
         this.voiceChannels.splice(index, 1);
       }
@@ -222,14 +259,29 @@ export default {
     userDisconnected(data) {
       this.updateUserConnection(data);
     },
-  },
+    createScreenShareChannel(data) {
+      this.screenShareChannels.push(data);
+    },
+    getScreenShareChannels(data) {
+      this.screenShareChannels = data.channels;
+    },
+    voiceChannelParted(data) {
+      const index = this.screenShareChannels.findIndex(
+        elem =>
+          elem.channelId === data.socketId && elem.channelId === data.channelId
+      );
+      if (index >= 0) {
+        this.screenShareChannels.splice(index, 1);
+      }
+    }
+  }
 };
 </script>
 
 <style scoped>
 div.channel-area {
   display: flex;
-  
+
   width: 230px;
   height: 100%;
   box-sizing: border-box;

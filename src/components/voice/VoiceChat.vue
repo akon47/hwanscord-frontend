@@ -71,13 +71,8 @@ export default {
     async addPeer(data) {
       console.log("addPeer", data);
 
-      if (this.localMediaStream === null) {
-        await this.setupLocalMedia();
-      }
-
       const { peerId } = data;
       if (peerId in this.peers) {
-        alert("peerId in this.peers");
         return;
       }
 
@@ -109,12 +104,12 @@ export default {
         }
       };
 
-      peerConnection.onaddstream = event => {
-        console.log("onAddStream", event);
-        this.peerMediaElements[peerId] = this.addPeerAudioElement(event.stream);
+      peerConnection.ontrack = event => {
+        console.log("onTrack", event);
+        this.peerMediaElements[peerId] = this.addPeerAudioElement(event.streams[0]);
       };
 
-      if (this.localMediaStream !== null) {
+      if (this.$store.getters.getLocalMediaStream) {
         //peerConnection.addStream(this.localMediaStream); // https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/addStream
         this.$store.getters.getLocalMediaStream
           .getTracks()
@@ -141,8 +136,6 @@ export default {
           alert("Error sending offer: ", error);
           console.log("Error sending offer: ", error);
         }
-
-        console.log("addPeer ended --");
       }
     },
     removePeer(data) {
@@ -164,9 +157,6 @@ export default {
 
       const { peerId, sessionDescription } = data;
       const peer = this.peers[peerId];
-
-      console.log(peerId, sessionDescription);
-      console.log(peer);
 
       var desc = new RTCSessionDescription(sessionDescription);
       const stuff = peer.setRemoteDescription(
