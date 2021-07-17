@@ -85,13 +85,21 @@ export default {
     async addChannel() {
       const channelName = prompt("채널 생성");
       if (channelName) {
-        await createChannel(channelName);
+        try {
+          await createChannel(channelName);
+        } catch (error) {
+          alert(error);
+        }
       }
     },
     async addVoiceChannel() {
       const channelName = prompt("채널 생성");
       if (channelName) {
-        await createVoiceChannel(channelName);
+        try {
+          await createVoiceChannel(channelName);
+        } catch (error) {
+          alert(error);
+        }
       }
     },
     async addScreenShareChannel() {
@@ -102,7 +110,7 @@ export default {
         }
         if (this.$store.getters.getDisplayMediaStream === null) {
           const displayStream = await this.$store.dispatch("setupDisplayMedia");
-          if(!displayStream) {
+          if (!displayStream) {
             alert("화면 공유를 사용할 수 없거나 취소하였습니다");
             return;
           }
