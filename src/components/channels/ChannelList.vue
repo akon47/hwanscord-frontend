@@ -101,7 +101,11 @@ export default {
           await this.$store.dispatch("setupLocalMedia");
         }
         if (this.$store.getters.getDisplayMediaStream === null) {
-          await this.$store.dispatch("setupDisplayMedia");
+          const displayStream = await this.$store.dispatch("setupDisplayMedia");
+          if(!displayStream) {
+            alert("화면 공유를 사용할 수 없거나 취소하였습니다");
+            return;
+          }
         }
         await createScreenShareChannel();
         playVoiceChannelConnectionSound();
