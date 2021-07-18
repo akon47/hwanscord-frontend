@@ -157,15 +157,18 @@ a:hover {
   border: 0 solid #dae1e7;
   width: 100%;
   transition: 0.2s;
+  color: white;
 }
 .btn:hover {
   background: #4752c4;
 }
 
-.btn.disabled {
+.btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  color:rgba(255, 255, 255, 0.5)
 }
+
 .log {
   color: #ff4057;
   font-size: 1rem;

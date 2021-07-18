@@ -7,21 +7,8 @@
     >
       <span class="header">
         <font-awesome-icon :icon="['fas', 'desktop']" style="color: gray" />
-        {{ channelData.user.username }} 님의 화면공유
+        {{ channelData.user.username }}님의 화면공유
       </span>
-      <!-- <div v-if="isMyChannel">
-        <context-menu
-          class="context-menu"
-          v-model="isMenuOpened"
-          :menuItems="menuItems"
-        />
-        <font-awesome-icon
-          class="icon"
-          :icon="['fas', 'cog']"
-          @click.stop="menuClick"
-          v-tooltip="'채널 편집'"
-        />
-      </div> -->
     </div>
     <div v-for="peer in peers" :key="peer.socketId">
       <voice-channel-user-item :peer="peer" :users="users" v-if="peer.socketId !== channelData.channelId"/>
