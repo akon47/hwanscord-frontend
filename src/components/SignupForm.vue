@@ -5,7 +5,7 @@
       <form
         @submit.prevent="submitForm"
         class="form"
-        :class="{ mobile: $isMobile() }"
+        :class="{ mobile: $isMobile ? this.$isMobile() : false }"
       >
         <div>
           <label for="username">유저이름 또는 별명</label>
