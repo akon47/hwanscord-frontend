@@ -22,8 +22,8 @@
     </div>
     <span>
       <form @submit.prevent="submitForm" style="margin-left: 50px">
-        <input type="text" id="message" v-model="message" autocomplete="off" />
-        <button type="submit" class="btn">보내기</button>
+        <input type="text" id="message" v-model="message" autocomplete="off"/>
+        <button type="submit" class="btn" v-bind:disabled="!messageValid">보내기</button>
       </form>
     </span>
   </div>
@@ -44,6 +44,11 @@ export default {
     return {
       message: "",
     };
+  },
+  computed: {
+    messageValid() {
+      return this.message !== "";
+    },
   },
   methods: {
     async submitForm() {
