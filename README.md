@@ -5,7 +5,7 @@
 The hwanscord-frontend project is a Discord-like toy project created to learn Vue.js.
 It has chatting, voice chat, and screen sharing functions between logged in users.
 
-## Screenshot
+## 🖼️ Screenshot
 
 ![image](https://user-images.githubusercontent.com/49547202/126036989-627afa3a-77eb-43e4-93e0-9650d08c9205.png)
 
@@ -13,5 +13,5 @@ It has chatting, voice chat, and screen sharing functions between logged in user
 
 ![image](https://user-images.githubusercontent.com/49547202/126037045-62e4eab5-7143-4eb6-8736-5de315e3399f.png)
 
-## Demo
+## 🚀 Demo
 https://kimhwan.kr/hwanscord
