@@ -1,11 +1,11 @@
-🌏 [한국어](./README-ko.md)
+🌏 [ENGLISH](./README.md)
 
-# HWANSCORD - FrontEnd
+# 환스코드 - 프론트엔드
 
-The hwanscord-frontend project is a Discord-like toy project created to learn Vue.js.
-It has chatting, voice chat, and screen sharing functions between logged in users.
+hwanscord-frontend 프로젝트는 Vue.js 를 학습하기 위해 만든 디스코드와 유사한 토이 프로젝트 입니다.   
+로그인된 사용자들끼리 채팅, 음성대화, 화면공유 기능을 가지고 있습니다.   
 
-## 🖼️ Screenshot
+## 🖼️ 스크린샷
 
 ![image](https://user-images.githubusercontent.com/49547202/126036989-627afa3a-77eb-43e4-93e0-9650d08c9205.png)
 
@@ -13,5 +13,5 @@ It has chatting, voice chat, and screen sharing functions between logged in user
 
 ![image](https://user-images.githubusercontent.com/49547202/126037045-62e4eab5-7143-4eb6-8736-5de315e3399f.png)
 
-## 🚀 Demo
+## 🚀 데모
 https://kimhwan.kr/hwanscord
