@@ -17,7 +17,7 @@
   </div>
   <div v-else class="h-100">
     <loading-spinner v-if="isLoading" />
-    <div v-else class="h-100">
+    <div v-else class="aboutarea">
       <div class="invalid-message">채팅채널을 선택하여 참가하기</div>
       <div class="about-parent">
         <about></about>
@@ -160,6 +160,13 @@ export default {
   border-radius: 10px;
   background-clip: padding-box;
   border: 5px solid transparent;
+}
+
+.aboutarea {
+  height: 100%;
+  overflow-y: hidden;
+  overflow-x: hidden;
+  padding-bottom: 10px;
 }
 
 .invalid-message {
