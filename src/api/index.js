@@ -1,7 +1,7 @@
 import axios from "axios";
 import { setInterceptors } from "./common/interceptors";
 
-export const apiUrl = 'https://kimhwan.kr/hwanscord-backend/';
+export const apiUrl = 'https://api.hwanscord.kimhwan.kr/';
 
 function createInstance() {
   const instance = axios.create({

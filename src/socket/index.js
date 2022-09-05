@@ -1,10 +1,10 @@
 import { io } from "socket.io-client";
 import store from "../store/index";
 
-const socketUrl = "wss://kimhwan.kr/";
+const socketUrl = "wss://api.hwanscord.kimhwan.kr/";
 
 const socket = io(socketUrl, {
-  path: "/hwanscord-backend/socket.io/",
+  path: "/socket.io/",
   withCredentials: true,
   auth: cb => {
     cb({
