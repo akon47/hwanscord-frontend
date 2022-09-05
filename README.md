@@ -14,4 +14,4 @@ It has chatting, voice chat, and screen sharing functions between logged in user
 ![image](https://user-images.githubusercontent.com/49547202/126037045-62e4eab5-7143-4eb6-8736-5de315e3399f.png)
 
 ## 🚀 Demo
-https://kimhwan.kr/hwanscord
+https://hwanscord.kimhwan.kr/
