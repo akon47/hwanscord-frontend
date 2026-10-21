@@ -1,0 +1,25 @@
+# hwanscord frontend stack on the service VM (10.10.10.75). Deployed by Jenkins to /srv/hwanscord/frontend.
+#   APP_TAG=<build number> docker compose pull && docker compose up -d
+# nginx inside the container serves the SPA and proxies /api, /socket.io, /uploads, /healthz to hwanscord-api:8080
+# over the shared `hwanscord` network (created by the backend stack; deploy.sh creates it if missing).
+name: hwanscord-frontend
+
+services:
+  web:
+    image: akon47/hwanscord-frontend:${APP_TAG:-latest}
+    container_name: hwanscord-web
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    networks:
+      - hwanscord
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"
+
+networks:
+  hwanscord:
+    external: true
+    name: hwanscord
