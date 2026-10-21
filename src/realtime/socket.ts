@@ -1,15 +1,17 @@
 import { io, type Socket } from 'socket.io-client'
 import type { ClientEvents, ServerEvents, SocketAck } from '@/api'
+import { getToken } from '@/api/token'
 
 export type AppSocket = Socket<ServerEvents, ClientEvents>
 
 let socket: AppSocket | null = null
 
-export function createSocket(token: string): AppSocket {
+export function createSocket(): AppSocket {
   disconnectSocket()
   socket = io(window.location.origin, {
     path: '/socket.io/',
-    auth: { token },
+    // read on every (re)connect, so a token refreshed after a password change is picked up
+    auth: (cb) => cb({ token: getToken() }),
     transports: ['websocket', 'polling'],
     reconnection: true,
     reconnectionDelay: 1000,

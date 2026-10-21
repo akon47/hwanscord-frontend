@@ -12,6 +12,7 @@ import ChannelSidebar from '@/components/layout/ChannelSidebar.vue'
 import MemberList from '@/components/layout/MemberList.vue'
 import MobileNav from '@/components/layout/MobileNav.vue'
 import ConnectionBanner from '@/components/layout/ConnectionBanner.vue'
+import EmailBanner from '@/components/layout/EmailBanner.vue'
 import ChatPane from '@/components/chat/ChatPane.vue'
 import SearchPanel from '@/components/chat/SearchPanel.vue'
 import VoiceChannelView from '@/components/voice/VoiceChannelView.vue'
@@ -96,6 +97,7 @@ const memberFilter = computed(() => (channel.value?.type === 'dm' ? channel.valu
 <template>
   <div class="workspace" :class="[`tab-${ui.mobileTab}`, { 'is-mobile': isMobile }]">
     <ConnectionBanner />
+    <EmailBanner v-if="!loading && !loadError" />
     <div v-if="loading" class="boot">
       <LoadingSpinner :size="40" />
       <p>HWANSCORD에 연결하는 중…</p>

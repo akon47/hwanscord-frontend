@@ -159,6 +159,13 @@ html[data-theme='light'] .input {
   color: var(--red);
 }
 
+.field-hint {
+  display: block;
+  margin-top: 6px;
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
 /* buttons */
 .btn {
   display: inline-flex;

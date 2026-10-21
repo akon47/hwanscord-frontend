@@ -1,13 +1,16 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { Hash, Pencil, Trash2, Volume2 } from '@lucide/vue'
-import { rtcApi, type RtcUsage } from '@/api'
+import { Copy, Hash, KeyRound, Pencil, Trash2, Volume2 } from '@lucide/vue'
+import { adminApi, rtcApi, type AdminUser, type RtcUsage } from '@/api'
 import { errorMessage } from '@/api/client'
 import { useChannelsStore } from '@/stores/channels'
 import { useUiStore } from '@/stores/ui'
 import { useUsersStore } from '@/stores/users'
 import { useChannelMenu } from '@/composables/useChannelMenu'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
+import UserAvatar from '@/components/users/UserAvatar.vue'
+import { useAuthStore } from '@/stores/auth'
+import { maskEmail } from '@/utils/account'
 
 const channels = useChannelsStore()
 const users = useUsersStore()
@@ -30,7 +33,60 @@ async function loadUsage() {
   }
 }
 
-onMounted(loadUsage)
+const auth = useAuthStore()
+const members = ref<AdminUser[]>([])
+const membersLoading = ref(true)
+const membersError = ref<string | null>(null)
+/** shown once, until closed; never stored */
+const issued = ref<{ user: AdminUser; password: string } | null>(null)
+const issuingId = ref<string | null>(null)
+
+async function loadMembers() {
+  membersLoading.value = true
+  membersError.value = null
+  try {
+    members.value = (await adminApi.fetchAdminUsers()).users
+  } catch (e) {
+    membersError.value = errorMessage(e)
+  } finally {
+    membersLoading.value = false
+  }
+}
+
+async function issueTemporaryPassword(user: AdminUser) {
+  const ok = await ui.askConfirm({
+    title: '임시 비밀번호 발급',
+    message: `${user.displayName}(@${user.username})의 비밀번호를 임시 비밀번호로 바꿀까요? 그 사용자의 모든 로그인이 해제돼요.`,
+    confirmLabel: '발급',
+    danger: true,
+  })
+  if (!ok) return
+  issuingId.value = user.id
+  try {
+    const { temporaryPassword } = await adminApi.issueTemporaryPassword(user.id)
+    issued.value = { user, password: temporaryPassword }
+    await loadMembers()
+  } catch (e) {
+    ui.toast(errorMessage(e), 'error')
+  } finally {
+    issuingId.value = null
+  }
+}
+
+async function copyIssued() {
+  if (!issued.value) return
+  try {
+    await navigator.clipboard.writeText(issued.value.password)
+    ui.toast('임시 비밀번호를 복사했어요.', 'success', 2000)
+  } catch {
+    ui.toast('복사하지 못했어요. 직접 선택해서 복사해 주세요.', 'error')
+  }
+}
+
+onMounted(() => {
+  void loadUsage()
+  void loadMembers()
+})
 
 const ratio = computed(() => (usage.value && usage.value.budgetGB > 0 ? Math.min(1, usage.value.egressGB / usage.value.budgetGB) : 0))
 const managed = computed(() => [...channels.textChannels, ...channels.voiceChannels])
@@ -79,8 +135,54 @@ function editChannel(id: string) {
       </li>
     </ul>
 
-    <h3 class="subtitle">멤버 ({{ users.all.length }})</h3>
-    <p class="hint">처음 가입한 계정이 관리자입니다. 관리자는 모든 채널과 메시지를 삭제할 수 있어요.</p>
+    <h3 class="subtitle">멤버 ({{ members.length || users.all.length }})</h3>
+    <p class="hint">
+      관리자는 모든 채널과 메시지를 삭제할 수 있어요. 이메일이 없어 비밀번호를 찾을 수 없는 멤버에게는 임시 비밀번호를
+      발급해 주세요. 발급하면 그 멤버의 모든 로그인이 해제돼요.
+    </p>
+
+    <div v-if="issued" class="issued" role="status">
+      <p>
+        <strong>{{ issued.user.displayName }}</strong>(@{{ issued.user.username }})의 임시 비밀번호예요. 이 창을 닫으면 다시 볼 수
+        없어요.
+      </p>
+      <div class="issued-row">
+        <code class="issued-password" data-testid="temporary-password">{{ issued.password }}</code>
+        <button type="button" class="btn btn-secondary btn-sm" @click="copyIssued"><Copy :size="14" /> 복사</button>
+        <button type="button" class="btn btn-ghost btn-sm" @click="issued = null">닫기</button>
+      </div>
+      <p class="hint">로그인한 뒤 설정 → 내 계정에서 비밀번호를 바꾸라고 알려 주세요.</p>
+    </div>
+
+    <LoadingSpinner v-if="membersLoading" :size="24" />
+    <p v-else-if="membersError" class="field-error">{{ membersError }}</p>
+    <ul v-else class="list">
+      <li v-for="member in members" :key="member.id" class="row member-row">
+        <UserAvatar :user-id="member.id" :display-name="member.displayName" :avatar-url="member.avatarUrl" :size="28" />
+        <span class="member-name truncate">
+          <strong>{{ member.displayName }}</strong>
+          <span class="text-muted">@{{ member.username }}</span>
+          <span v-if="member.role === 'admin'" class="pill">관리자</span>
+        </span>
+        <span class="member-email truncate text-muted">
+          <template v-if="member.email">
+            {{ maskEmail(member.email) }}
+            <span class="pill" :class="member.emailVerified ? 'is-ok' : 'is-pending'">{{ member.emailVerified ? '인증' : '미인증' }}</span>
+          </template>
+          <template v-else>이메일 없음</template>
+          <span v-if="member.connections.length" class="pill">GitHub</span>
+        </span>
+        <button
+          v-if="member.id !== auth.userId"
+          type="button"
+          class="btn btn-ghost btn-sm"
+          :disabled="issuingId === member.id"
+          @click="issueTemporaryPassword(member)"
+        >
+          <KeyRound :size="14" /> 임시 비밀번호 발급
+        </button>
+      </li>
+    </ul>
   </section>
 </template>
 
@@ -179,5 +281,82 @@ function editChannel(id: string) {
 
 .row-meta {
   font-size: var(--font-size-sm);
+}
+
+.member-row {
+  gap: 10px;
+  padding: 8px 12px;
+}
+
+.member-name {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.member-email {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 260px;
+  font-size: var(--font-size-sm);
+}
+
+.pill {
+  flex-shrink: 0;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--bg-tertiary);
+  color: var(--text-muted);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+}
+
+.pill.is-ok {
+  color: var(--green);
+}
+
+.pill.is-pending {
+  color: var(--yellow);
+}
+
+.issued {
+  margin-bottom: 12px;
+  padding: 12px 16px;
+  border: 1px solid var(--brand);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+}
+
+.issued-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.issued-password {
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-tertiary);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 1.05rem;
+  letter-spacing: 0.06em;
+  user-select: all;
+  color: var(--header-primary);
+}
+
+@media (max-width: 599px) {
+  .member-row {
+    flex-wrap: wrap;
+  }
+
+  .member-email {
+    max-width: none;
+    width: 100%;
+  }
 }
 </style>

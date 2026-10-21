@@ -22,8 +22,18 @@ export function updateMe(body: UpdateMeBody) {
 }
 
 /** currentPassword may be omitted only while the account has no password (hasPassword === false). */
+/** Returns a fresh token: every other session (and this one's old token) is signed out. */
 export function updatePassword(body: { currentPassword?: string; newPassword: string }) {
-  return http.patch<void>('/users/me/password', body)
+  return http.patch<{ token: string }>('/users/me/password', body)
+}
+
+export function resendVerification() {
+  return http.post<void>('/users/me/email/resend-verification')
+}
+
+/** Sends a confirmation link to the new address; the email changes once it is opened. */
+export function changeEmail(body: { email: string; currentPassword?: string }) {
+  return http.patch<void>('/users/me/email', body)
 }
 
 export function unlinkGithub() {

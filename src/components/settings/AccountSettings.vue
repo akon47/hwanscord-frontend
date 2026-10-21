@@ -8,16 +8,60 @@ import { formatDate } from '@/utils/time'
 import UserAvatar from '@/components/users/UserAvatar.vue'
 import { useAuthProviders } from '@/composables/useAuthProviders'
 import { readJson } from '@/utils/storage'
+import { emailError as describeEmail, isValidEmail, maskEmail } from '@/utils/account'
+import { useVerificationResend } from '@/composables/useVerificationResend'
 
 const auth = useAuthStore()
 const ui = useUiStore()
 const providers = useAuthProviders()
+const verification = useVerificationResend()
+
+const editingEmail = ref(false)
+const newEmail = ref('')
+const emailPassword = ref('')
+const savingEmail = ref(false)
+const emailFormError = ref<string | null>(null)
+const pendingEmail = ref<string | null>(null)
+const newEmailError = computed(() => (newEmail.value ? describeEmail(newEmail.value) : null))
 
 /** accounts created through GitHub have no password until one is set */
 const hasPassword = computed(() => auth.user?.hasPassword !== false)
 const github = computed(() => auth.user?.connections?.find((c) => c.provider === 'github') ?? null)
 const linking = ref(false)
 const unlinking = ref(false)
+
+function startEmailEdit() {
+  editingEmail.value = true
+  newEmail.value = ''
+  emailPassword.value = ''
+  emailFormError.value = null
+}
+
+async function submitEmail() {
+  if (!isValidEmail(newEmail.value) || savingEmail.value) return
+  if (hasPassword.value && !emailPassword.value) {
+    emailFormError.value = '현재 비밀번호를 입력해 주세요.'
+    return
+  }
+  savingEmail.value = true
+  emailFormError.value = null
+  const target = newEmail.value.trim().toLowerCase()
+  try {
+    await auth.changeEmail(target, hasPassword.value ? emailPassword.value : null)
+    pendingEmail.value = target
+    editingEmail.value = false
+    ui.toast(`${target} 로 확인 메일을 보냈어요. 링크를 열면 변경이 끝나요.`, 'success', 6000)
+  } catch (error) {
+    emailFormError.value =
+      error instanceof ApiError && error.fieldErrors.currentPassword
+        ? '현재 비밀번호가 올바르지 않아요.'
+        : error instanceof ApiError && error.code === 'CONFLICT'
+          ? '이미 다른 계정에서 쓰고 있는 이메일이에요.'
+          : errorMessage(error)
+  } finally {
+    savingEmail.value = false
+  }
+}
 
 async function linkGithub() {
   linking.value = true
@@ -134,7 +178,7 @@ async function changePassword() {
     ui.toast(firstPassword ? '비밀번호를 설정했습니다.' : '비밀번호를 변경했습니다.', 'success')
   } catch (error) {
     passwordError.value =
-      error instanceof ApiError && error.status === 401
+      error instanceof ApiError && error.fieldErrors.currentPassword
         ? '현재 비밀번호가 올바르지 않습니다.'
         : errorMessage(error)
   } finally {
@@ -218,6 +262,50 @@ async function changePassword() {
         </div>
       </form>
     </div>
+
+    <h3 class="subtitle">이메일</h3>
+    <div class="email-row">
+      <div class="email-info">
+        <strong v-if="auth.user.email" class="email-address">{{ maskEmail(auth.user.email) }}</strong>
+        <span v-else class="text-muted">등록된 이메일이 없어요</span>
+        <span v-if="auth.user.email" class="badge" :class="auth.user.emailVerified ? 'is-ok' : 'is-pending'">
+          {{ auth.user.emailVerified ? '인증됨' : '인증 대기' }}
+        </span>
+      </div>
+      <button
+        v-if="auth.user.email && !auth.user.emailVerified"
+        type="button"
+        class="btn btn-ghost btn-sm"
+        :disabled="verification.sending.value || verification.secondsLeft.value > 0"
+        @click="verification.resend"
+      >
+        {{ verification.secondsLeft.value > 0 ? `다시 보내기 (${verification.secondsLeft.value}초)` : '인증 메일 다시 보내기' }}
+      </button>
+      <button v-if="!editingEmail" type="button" class="btn btn-secondary btn-sm" @click="startEmailEdit">
+        {{ auth.user.email ? '변경' : '등록' }}
+      </button>
+    </div>
+    <p v-if="pendingEmail" class="text-muted note">
+      {{ pendingEmail }} 로 보낸 확인 메일의 링크를 열면 이메일이 바뀌어요. (24시간 안에 한 번)
+    </p>
+    <form v-if="editingEmail" class="fields password email-form" novalidate @submit.prevent="submitEmail">
+      <label class="field">
+        <span class="label">새 이메일</span>
+        <input v-model="newEmail" class="input" type="email" autocomplete="email" inputmode="email" autofocus />
+        <span v-if="newEmailError" class="field-error">{{ newEmailError }}</span>
+      </label>
+      <label v-if="hasPassword" class="field">
+        <span class="label">현재 비밀번호</span>
+        <input v-model="emailPassword" class="input" type="password" autocomplete="current-password" />
+      </label>
+      <p v-if="emailFormError" class="field-error" role="alert">{{ emailFormError }}</p>
+      <div class="email-actions">
+        <button type="button" class="btn btn-ghost" @click="editingEmail = false">취소</button>
+        <button type="submit" class="btn btn-primary" :disabled="!isValidEmail(newEmail) || savingEmail">
+          {{ savingEmail ? '보내는 중…' : '확인 메일 보내기' }}
+        </button>
+      </div>
+    </form>
 
     <h3 class="subtitle">연결된 계정</h3>
     <div class="connection">
@@ -405,6 +493,59 @@ textarea.input {
 .save-bar span {
   flex: 1;
   font-weight: 500;
+}
+
+.email-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 520px;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  background: var(--bg-tertiary);
+}
+
+.email-info {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.email-address {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--header-primary);
+}
+
+.badge {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+}
+
+.badge.is-ok {
+  background: color-mix(in srgb, var(--green) 20%, transparent);
+  color: var(--green);
+}
+
+.badge.is-pending {
+  background: color-mix(in srgb, var(--yellow) 22%, transparent);
+  color: var(--yellow);
+}
+
+.email-form {
+  margin-top: 12px;
+}
+
+.email-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 .connection {

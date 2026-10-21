@@ -11,6 +11,9 @@ const router = createRouter({
       component: () => import('@/views/LoginView.vue'),
       meta: { guest: true },
     },
+    { path: '/forgot-password', name: 'forgot-password', component: () => import('@/views/ForgotPasswordView.vue') },
+    { path: '/reset-password', name: 'reset-password', component: () => import('@/views/ResetPasswordView.vue') },
+    { path: '/verify-email', name: 'verify-email', component: () => import('@/views/VerifyEmailView.vue') },
     {
       path: '/oauth/callback',
       name: 'oauth-callback',

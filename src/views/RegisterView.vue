@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ApiError, errorMessage } from '@/api/client'
 import { useAuthStore } from '@/stores/auth'
+import { emailError as describeEmail, isValidEmail } from '@/utils/account'
 import GithubButton from '@/components/auth/GithubButton.vue'
 import AuthLayout from './AuthLayout.vue'
 
@@ -10,6 +11,7 @@ const auth = useAuthStore()
 const router = useRouter()
 
 const username = ref('')
+const email = ref('')
 const displayName = ref('')
 const password = ref('')
 const passwordRepeat = ref('')
@@ -25,6 +27,9 @@ const usernameError = computed(() =>
     ? '영문 소문자, 숫자, 밑줄(_), 마침표(.)로 2~32자여야 해요.'
     : (fieldErrors.value.username?.[0] ?? null),
 )
+const emailError = computed(() =>
+  email.value ? (describeEmail(email.value) ?? fieldErrors.value.email?.[0] ?? null) : (fieldErrors.value.email?.[0] ?? null),
+)
 const passwordError = computed(() =>
   password.value && (password.value.length < 8 || password.value.length > 72)
     ? '비밀번호는 8~72자여야 해요.'
@@ -36,6 +41,7 @@ const repeatError = computed(() =>
 const valid = computed(
   () =>
     USERNAME_RE.test(usernameValue.value) &&
+    isValidEmail(email.value) &&
     password.value.length >= 8 &&
     password.value.length <= 72 &&
     password.value === passwordRepeat.value &&
@@ -48,10 +54,11 @@ async function submit() {
   error.value = null
   fieldErrors.value = {}
   try {
-    await auth.register(usernameValue.value, password.value, displayName.value.trim() || undefined)
+    await auth.register(usernameValue.value, email.value.trim().toLowerCase(), password.value, displayName.value.trim() || undefined)
     await router.replace('/channels/@me')
   } catch (e) {
-    if (e instanceof ApiError && e.code === 'CONFLICT') error.value = '이미 사용 중인 아이디예요.'
+    if (e instanceof ApiError && e.code === 'CONFLICT')
+      error.value = e.message.includes('이메일') ? '이미 사용 중인 이메일이에요.' : '이미 사용 중인 아이디예요.'
     else if (e instanceof ApiError && e.code === 'VALIDATION_ERROR') fieldErrors.value = e.fieldErrors
     else error.value = errorMessage(e)
   } finally {
@@ -75,6 +82,12 @@ async function submit() {
           required
         />
         <span v-if="usernameError" class="field-error">{{ usernameError }}</span>
+      </label>
+      <label class="field">
+        <span class="label">이메일 <span class="required">*</span></span>
+        <input v-model="email" class="input" type="email" autocomplete="email" autocapitalize="off" inputmode="email" required />
+        <span v-if="emailError" class="field-error">{{ emailError }}</span>
+        <span v-else class="field-hint">비밀번호를 잊었을 때 이 주소로 복구할 수 있어요. 인증 메일을 보내 드려요.</span>
       </label>
       <label class="field">
         <span class="label">별명</span>

@@ -45,7 +45,7 @@ async function submit() {
   <AuthLayout title="돌아오신 걸 환영해요!" subtitle="다시 만나다니 너무 반가워요!">
     <form class="form" novalidate @submit.prevent="submit">
       <label class="field">
-        <span class="label">아이디 <span class="required">*</span></span>
+        <span class="label">아이디 또는 이메일 <span class="required">*</span></span>
         <input
           v-model="username"
           class="input"
@@ -59,6 +59,7 @@ async function submit() {
       <label class="field">
         <span class="label">비밀번호 <span class="required">*</span></span>
         <input v-model="password" class="input" type="password" autocomplete="current-password" required />
+        <RouterLink to="/forgot-password" class="forgot">비밀번호를 잊으셨나요?</RouterLink>
       </label>
       <p v-if="error" class="field-error" role="alert">{{ error }}</p>
       <button type="submit" class="btn btn-primary btn-lg submit" :disabled="!valid || loading">
@@ -84,6 +85,12 @@ async function submit() {
 
 .required {
   color: var(--red);
+}
+
+.forgot {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: var(--font-size-sm);
 }
 
 .submit {

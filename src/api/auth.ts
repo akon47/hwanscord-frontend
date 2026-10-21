@@ -1,7 +1,7 @@
 import { http } from './client'
 import type { AuthProviders, AuthResponse, User } from './types'
 
-export function register(body: { username: string; password: string; displayName?: string }) {
+export function register(body: { username: string; email: string; password: string; displayName?: string }) {
   return http.post<AuthResponse>('/auth/register', body)
 }
 
@@ -11,6 +11,19 @@ export function login(body: { username: string; password: string }) {
 
 export function fetchMe() {
   return http.get<{ user: User }>('/auth/me')
+}
+
+export function verifyEmail(token: string) {
+  return http.post<{ user: User }>('/auth/verify-email', { token })
+}
+
+/** Always resolves (the server answers 204 whether or not the account exists). */
+export function forgotPassword(login: string) {
+  return http.post<void>('/auth/password/forgot', { login })
+}
+
+export function resetPassword(token: string, newPassword: string) {
+  return http.post<void>('/auth/password/reset', { token, newPassword })
 }
 
 export function fetchProviders() {

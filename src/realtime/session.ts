@@ -28,7 +28,7 @@ export async function startSession(router: Router): Promise<void> {
 
   await loadWorkspace()
 
-  const socket = createSocket(auth.token)
+  const socket = createSocket()
   registerHandlers(socket, router)
   let hadConnection = false
   socket.on('connect', () => {
@@ -42,9 +42,13 @@ export async function startSession(router: Router): Promise<void> {
     }
     hadConnection = true
   })
-  socket.on('disconnect', () => {
+  socket.on('disconnect', (reason) => {
     ui.setConnection('disconnected')
     useVoiceStore().onSocketDisconnected()
+    // the server drops sockets whose sessions were invalidated (password change/reset). socket.io does not
+    // retry after a server-side disconnect: reconnect once with the current token — a stale one gets
+    // `unauthorized` (→ logout below), a refreshed one simply reconnects.
+    if (reason === 'io server disconnect') setTimeout(() => socket.connect(), 500)
   })
   socket.on('connect_error', (error) => {
     if (error.message === 'unauthorized') {

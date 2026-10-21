@@ -21,6 +21,18 @@ export interface User {
   hasPassword?: boolean
   /** self only: linked OAuth identities */
   connections?: OAuthConnection[]
+  /** self only */
+  email?: string | null
+  /** self only */
+  emailVerified?: boolean
+}
+
+/** GET /admin/users row */
+export type AdminUser = Omit<User, 'settings'> & {
+  email: string | null
+  emailVerified: boolean
+  hasPassword: boolean
+  connections: OAuthConnection[]
 }
 
 export interface OAuthConnection {

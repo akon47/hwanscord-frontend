@@ -67,8 +67,8 @@ export const useAuthStore = defineStore('auth', {
       this.setSession(res.token, res.user)
       return res.user
     },
-    async register(username: string, password: string, displayName?: string) {
-      const res = await authApi.register({ username, password, displayName: displayName || undefined })
+    async register(username: string, email: string, password: string, displayName?: string) {
+      const res = await authApi.register({ username, email, password, displayName: displayName || undefined })
       this.setSession(res.token, res.user)
       return res.user
     },
@@ -104,6 +104,16 @@ export const useAuthStore = defineStore('auth', {
       this.user = { ...user, settings: user.settings ?? this.user?.settings }
       return this.user
     },
+    async resendVerification() {
+      await usersApi.resendVerification()
+    },
+    async changeEmail(email: string, currentPassword: string | null) {
+      await usersApi.changeEmail(currentPassword === null ? { email } : { email, currentPassword })
+    },
+    /** Applies the user returned by /auth/verify-email when it is me. */
+    applyVerifiedUser(user: User) {
+      if (this.user && this.user.id === user.id) this.user = { ...user, settings: user.settings ?? this.user.settings }
+    },
     /** Re-reads my profile (connections / hasPassword) from the server. */
     async refreshMe() {
       const { user } = await authApi.fetchMe()
@@ -127,9 +137,12 @@ export const useAuthStore = defineStore('auth', {
     },
     /** Pass `null` as currentPassword to set the first password of a GitHub-only account. */
     async changePassword(currentPassword: string | null, newPassword: string) {
-      await usersApi.updatePassword(
+      const { token } = await usersApi.updatePassword(
         currentPassword === null ? { newPassword } : { currentPassword, newPassword },
       )
+      // every other session was signed out; keep this one with the fresh token (the socket reconnects with it)
+      this.token = token
+      setToken(token)
       if (this.user && this.user.hasPassword === false) this.user = { ...this.user, hasPassword: true }
     },
     async uploadAvatar(file: File, onProgress?: (ratio: number) => void) {
