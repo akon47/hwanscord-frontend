@@ -46,7 +46,7 @@ export function sanitizeUsername(login: string): string {
   let name = login
     .normalize('NFKD')
     .toLowerCase()
-    .replace(/[-\s]+/g, '_')
+    .replace(/[-+\s]+/g, '_')
     .replace(/[^a-z0-9_.]/g, '')
     .replace(/_{2,}/g, '_')
     .replace(/\.{2,}/g, '.')

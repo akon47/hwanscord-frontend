@@ -28,7 +28,7 @@ async function submit() {
 </script>
 
 <template>
-  <AuthLayout title="비밀번호 찾기" subtitle="가입할 때 쓴 아이디나 이메일을 입력해 주세요.">
+  <AuthLayout title="비밀번호 찾기" subtitle="가입할 때 쓴 이메일(기존 사용자는 아이디)을 입력해 주세요.">
     <div v-if="sent" class="form" role="status">
       <p class="sent">
         메일을 보냈어요(등록·인증된 이메일이 있다면). 받은편지함과 스팸함을 확인하고, 메일의 링크로 30분 안에 새 비밀번호를
@@ -39,7 +39,7 @@ async function submit() {
     </div>
     <form v-else class="form" novalidate @submit.prevent="submit">
       <label class="field">
-        <span class="label">아이디 또는 이메일 <span class="required">*</span></span>
+        <span class="label">이메일 또는 아이디 <span class="required">*</span></span>
         <input v-model="login" class="input" type="text" autocomplete="username" autocapitalize="off" autofocus required />
       </label>
       <p v-if="error" class="field-error" role="alert">{{ error }}</p>

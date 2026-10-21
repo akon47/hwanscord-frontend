@@ -45,13 +45,15 @@ async function submit() {
   <AuthLayout title="돌아오신 걸 환영해요!" subtitle="다시 만나다니 너무 반가워요!">
     <form class="form" novalidate @submit.prevent="submit">
       <label class="field">
-        <span class="label">아이디 또는 이메일 <span class="required">*</span></span>
+        <span class="label">이메일 <span class="required">*</span></span>
         <input
           v-model="username"
           class="input"
           type="text"
           autocomplete="username"
           autocapitalize="off"
+          inputmode="email"
+          placeholder="이메일 (기존 사용자는 아이디)"
           autofocus
           required
         />

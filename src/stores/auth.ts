@@ -62,17 +62,17 @@ export const useAuthStore = defineStore('auth', {
         this.ready = true
       }
     },
-    async login(username: string, password: string) {
-      const res = await authApi.login({ username, password })
+    /** `login` is the email, or the username for legacy accounts. */
+    async login(login: string, password: string) {
+      const res = await authApi.login({ login, password })
       this.setSession(res.token, res.user)
       return res.user
     },
-    async register(username: string, email: string, password: string, displayName?: string) {
-      const res = await authApi.register({ username, email, password, displayName: displayName || undefined })
+    async register(body: { signupToken: string; password: string; displayName?: string; username?: string }) {
+      const res = await authApi.register(body)
       this.setSession(res.token, res.user)
       return res.user
     },
-    /** Session token handed back by the GitHub callback (fragment). */
     async loginWithToken(token: string) {
       this.token = token
       setToken(token)
@@ -104,15 +104,14 @@ export const useAuthStore = defineStore('auth', {
       this.user = { ...user, settings: user.settings ?? this.user?.settings }
       return this.user
     },
-    async resendVerification() {
-      await usersApi.resendVerification()
+    async requestEmailCode(email: string, currentPassword: string | null) {
+      await usersApi.requestEmailCode(currentPassword === null ? { email } : { email, currentPassword })
     },
-    async changeEmail(email: string, currentPassword: string | null) {
-      await usersApi.changeEmail(currentPassword === null ? { email } : { email, currentPassword })
-    },
-    /** Applies the user returned by /auth/verify-email when it is me. */
-    applyVerifiedUser(user: User) {
-      if (this.user && this.user.id === user.id) this.user = { ...user, settings: user.settings ?? this.user.settings }
+    /** Sets the verified email; lifts the email gate. */
+    async verifyEmailCode(code: string) {
+      const { user } = await usersApi.verifyEmailCode(code)
+      this.user = { ...user, settings: user.settings ?? this.user?.settings }
+      return this.user
     },
     /** Re-reads my profile (connections / hasPassword) from the server. */
     async refreshMe() {

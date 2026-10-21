@@ -8,21 +8,21 @@ import { formatDate } from '@/utils/time'
 import UserAvatar from '@/components/users/UserAvatar.vue'
 import { useAuthProviders } from '@/composables/useAuthProviders'
 import { readJson } from '@/utils/storage'
-import { emailError as describeEmail, isValidEmail, maskEmail } from '@/utils/account'
-import { useVerificationResend } from '@/composables/useVerificationResend'
+import { maskEmail } from '@/utils/account'
+import { useUsernameAvailability } from '@/composables/useUsernameAvailability'
+import EmailCodeFlow from '@/components/auth/EmailCodeFlow.vue'
 
 const auth = useAuthStore()
 const ui = useUiStore()
 const providers = useAuthProviders()
-const verification = useVerificationResend()
-
 const editingEmail = ref(false)
-const newEmail = ref('')
-const emailPassword = ref('')
-const savingEmail = ref(false)
-const emailFormError = ref<string | null>(null)
-const pendingEmail = ref<string | null>(null)
-const newEmailError = computed(() => (newEmail.value ? describeEmail(newEmail.value) : null))
+
+const username = ref(auth.user?.username ?? '')
+const savingUsername = ref(false)
+const { state: usernameState, suggestion: usernameSuggestion } = useUsernameAvailability(username, {
+  skip: () => auth.user?.username ?? null,
+})
+const usernameDirty = computed(() => username.value.trim() !== (auth.user?.username ?? ''))
 
 /** accounts created through GitHub have no password until one is set */
 const hasPassword = computed(() => auth.user?.hasPassword !== false)
@@ -30,36 +30,25 @@ const github = computed(() => auth.user?.connections?.find((c) => c.provider ===
 const linking = ref(false)
 const unlinking = ref(false)
 
-function startEmailEdit() {
-  editingEmail.value = true
-  newEmail.value = ''
-  emailPassword.value = ''
-  emailFormError.value = null
+function emailChanged() {
+  editingEmail.value = false
+  ui.toast('이메일을 인증했어요. 이제 이 주소로 로그인해요.', 'success')
 }
 
-async function submitEmail() {
-  if (!isValidEmail(newEmail.value) || savingEmail.value) return
-  if (hasPassword.value && !emailPassword.value) {
-    emailFormError.value = '현재 비밀번호를 입력해 주세요.'
-    return
-  }
-  savingEmail.value = true
-  emailFormError.value = null
-  const target = newEmail.value.trim().toLowerCase()
+async function saveUsername() {
+  const value = username.value.trim()
+  if (!usernameDirty.value || usernameState.value !== 'available' || savingUsername.value) return
+  savingUsername.value = true
   try {
-    await auth.changeEmail(target, hasPassword.value ? emailPassword.value : null)
-    pendingEmail.value = target
-    editingEmail.value = false
-    ui.toast(`${target} 로 확인 메일을 보냈어요. 링크를 열면 변경이 끝나요.`, 'success', 6000)
+    await auth.patchMe({ username: value })
+    ui.toast(`사용자명을 @${value} 로 바꿨어요.`, 'success', 2500)
   } catch (error) {
-    emailFormError.value =
-      error instanceof ApiError && error.fieldErrors.currentPassword
-        ? '현재 비밀번호가 올바르지 않아요.'
-        : error instanceof ApiError && error.code === 'CONFLICT'
-          ? '이미 다른 계정에서 쓰고 있는 이메일이에요.'
-          : errorMessage(error)
+    ui.toast(
+      error instanceof ApiError && error.code === 'CONFLICT' ? '이미 사용 중인 사용자명이에요.' : errorMessage(error),
+      'error',
+    )
   } finally {
-    savingEmail.value = false
+    savingUsername.value = false
   }
 }
 
@@ -237,10 +226,35 @@ async function changePassword() {
           <input v-model="displayName" class="input" type="text" maxlength="32" />
           <span v-if="!displayNameValid" class="field-error">별명은 1~32자여야 해요.</span>
         </label>
-        <label class="field">
-          <span class="label">사용자명</span>
-          <input :value="auth.user.username" class="input" type="text" disabled />
-        </label>
+        <div class="field">
+          <label class="label" for="settings-username">사용자명</label>
+          <div class="username-row">
+            <input
+              id="settings-username"
+              v-model="username"
+              class="input"
+              type="text"
+              autocapitalize="off"
+              spellcheck="false"
+              maxlength="32"
+            />
+            <button
+              type="button"
+              class="btn btn-primary btn-sm"
+              :disabled="!usernameDirty || usernameState !== 'available' || savingUsername"
+              @click="saveUsername"
+            >
+              변경
+            </button>
+          </div>
+          <span v-if="usernameState === 'invalid'" class="field-error">영문 소문자, 숫자, 밑줄(_), 마침표(.)로 2~32자여야 해요.</span>
+          <span v-else-if="usernameState === 'taken'" class="field-error">
+            이미 사용 중이에요.<template v-if="usernameSuggestion"> 예: {{ usernameSuggestion }}</template>
+          </span>
+          <span v-else-if="usernameDirty && usernameState === 'checking'" class="field-hint">확인 중…</span>
+          <span v-else-if="usernameDirty && usernameState === 'available'" class="field-hint">사용할 수 있어요.</span>
+          <span v-else class="field-hint">멘션과 프로필에 보이는 이름이에요. 로그인은 이메일로 해요.</span>
+        </div>
         <label class="field">
           <span class="label">내 소개</span>
           <textarea
@@ -268,44 +282,20 @@ async function changePassword() {
       <div class="email-info">
         <strong v-if="auth.user.email" class="email-address">{{ maskEmail(auth.user.email) }}</strong>
         <span v-else class="text-muted">등록된 이메일이 없어요</span>
-        <span v-if="auth.user.email" class="badge" :class="auth.user.emailVerified ? 'is-ok' : 'is-pending'">
-          {{ auth.user.emailVerified ? '인증됨' : '인증 대기' }}
-        </span>
+        <span v-if="auth.user.email" class="badge is-ok">인증됨</span>
       </div>
-      <button
-        v-if="auth.user.email && !auth.user.emailVerified"
-        type="button"
-        class="btn btn-ghost btn-sm"
-        :disabled="verification.sending.value || verification.secondsLeft.value > 0"
-        @click="verification.resend"
-      >
-        {{ verification.secondsLeft.value > 0 ? `다시 보내기 (${verification.secondsLeft.value}초)` : '인증 메일 다시 보내기' }}
-      </button>
-      <button v-if="!editingEmail" type="button" class="btn btn-secondary btn-sm" @click="startEmailEdit">
+      <button v-if="!editingEmail" type="button" class="btn btn-secondary btn-sm" @click="editingEmail = true">
         {{ auth.user.email ? '변경' : '등록' }}
       </button>
     </div>
-    <p v-if="pendingEmail" class="text-muted note">
-      {{ pendingEmail }} 로 보낸 확인 메일의 링크를 열면 이메일이 바뀌어요. (24시간 안에 한 번)
-    </p>
-    <form v-if="editingEmail" class="fields password email-form" novalidate @submit.prevent="submitEmail">
-      <label class="field">
-        <span class="label">새 이메일</span>
-        <input v-model="newEmail" class="input" type="email" autocomplete="email" inputmode="email" autofocus />
-        <span v-if="newEmailError" class="field-error">{{ newEmailError }}</span>
-      </label>
-      <label v-if="hasPassword" class="field">
-        <span class="label">현재 비밀번호</span>
-        <input v-model="emailPassword" class="input" type="password" autocomplete="current-password" />
-      </label>
-      <p v-if="emailFormError" class="field-error" role="alert">{{ emailFormError }}</p>
-      <div class="email-actions">
-        <button type="button" class="btn btn-ghost" @click="editingEmail = false">취소</button>
-        <button type="submit" class="btn btn-primary" :disabled="!isValidEmail(newEmail) || savingEmail">
-          {{ savingEmail ? '보내는 중…' : '확인 메일 보내기' }}
-        </button>
-      </div>
-    </form>
+    <p class="text-muted note">이메일은 로그인 아이디예요. 바꾸면 새 주소로 보낸 6자리 코드를 입력해야 바뀌어요.</p>
+    <div v-if="editingEmail" class="email-form">
+      <EmailCodeFlow :require-password="hasPassword" submit-label="새 주소로 코드 받기" @done="emailChanged">
+        <template #secondary>
+          <button type="button" class="btn btn-ghost" @click="editingEmail = false">취소</button>
+        </template>
+      </EmailCodeFlow>
+    </div>
 
     <h3 class="subtitle">연결된 계정</h3>
     <div class="connection">
@@ -539,7 +529,17 @@ textarea.input {
 }
 
 .email-form {
+  max-width: 520px;
   margin-top: 12px;
+}
+
+.username-row {
+  display: flex;
+  gap: 8px;
+}
+
+.username-row .input {
+  flex: 1;
 }
 
 .email-actions {

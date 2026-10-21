@@ -1,20 +1,32 @@
 import { http } from './client'
 import type { AuthProviders, AuthResponse, User } from './types'
 
-export function register(body: { username: string; email: string; password: string; displayName?: string }) {
+/** Signup step 1: mails a 6-digit code (always 204 — an existing address gets a notice instead). */
+export function registerStart(email: string) {
+  return http.post<void>('/auth/register/start', { email })
+}
+
+/** Signup step 2: code → short-lived signup token. A wrong code fails with `details.remainingAttempts`. */
+export function registerVerify(email: string, code: string) {
+  return http.post<{ signupToken: string }>('/auth/register/verify', { email, code })
+}
+
+/** Signup step 3. */
+export function register(body: { signupToken: string; password: string; displayName?: string; username?: string }) {
   return http.post<AuthResponse>('/auth/register', body)
 }
 
-export function login(body: { username: string; password: string }) {
+export function usernameAvailable(username: string) {
+  return http.get<{ available: boolean; suggestion: string }>('/auth/username-available', { username })
+}
+
+/** `login` is the email, or the username for accounts without one. */
+export function login(body: { login: string; password: string }) {
   return http.post<AuthResponse>('/auth/login', body)
 }
 
 export function fetchMe() {
   return http.get<{ user: User }>('/auth/me')
-}
-
-export function verifyEmail(token: string) {
-  return http.post<{ user: User }>('/auth/verify-email', { token })
 }
 
 /** Always resolves (the server answers 204 whether or not the account exists). */

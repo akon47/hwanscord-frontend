@@ -2,6 +2,7 @@ import { http, upload } from './client'
 import type { Status, User } from './types'
 
 export interface UpdateMeBody {
+  username?: string
   displayName?: string
   aboutMe?: string | null
   customStatus?: string | null
@@ -27,13 +28,14 @@ export function updatePassword(body: { currentPassword?: string; newPassword: st
   return http.patch<{ token: string }>('/users/me/password', body)
 }
 
-export function resendVerification() {
-  return http.post<void>('/users/me/email/resend-verification')
+/** Sends a 6-digit code to the address; nothing changes until it is entered. Allowed while gated. */
+export function requestEmailCode(body: { email: string; currentPassword?: string }) {
+  return http.post<void>('/users/me/email', body)
 }
 
-/** Sends a confirmation link to the new address; the email changes once it is opened. */
-export function changeEmail(body: { email: string; currentPassword?: string }) {
-  return http.patch<void>('/users/me/email', body)
+/** Sets the email (and lifts the email gate). A wrong code fails with `details.remainingAttempts`. */
+export function verifyEmailCode(code: string) {
+  return http.post<{ user: User }>('/users/me/email/verify', { code })
 }
 
 export function unlinkGithub() {

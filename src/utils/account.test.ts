@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import {
   cooldownLeft,
-  emailBannerState,
+  gateRedirect,
+  usernameError,
+  usernameFromEmail,
   emailError,
   isValidEmail,
   maskEmail,
@@ -48,17 +50,40 @@ describe('maskEmail', () => {
   })
 })
 
-describe('emailBannerState', () => {
-  it('asks for an email, then for verification, then nothing', () => {
-    expect(emailBannerState(null, false)).toBe('none')
-    expect(emailBannerState({ email: null, emailVerified: false }, false)).toBe('missing')
-    expect(emailBannerState({ email: 'a@b.co', emailVerified: false }, false)).toBe('unverified')
-    expect(emailBannerState({ email: 'a@b.co', emailVerified: true }, false)).toBe('none')
+describe('username suggestion', () => {
+  it.each([
+    ['mina.kim@example.com', 'mina.kim'],
+    ['Hello.World+Tag@Example.com', 'hello.world_tag'],
+    ['__x__@example.com', 'xuser'],
+    ['김환@example.com', 'user'],
+    [`${'a'.repeat(40)}@x.io`, 'a'.repeat(32)],
+  ])('%s → %s', (email, handle) => {
+    expect(usernameFromEmail(email)).toBe(handle)
+    expect(usernameError(usernameFromEmail(email))).toBeNull()
   })
 
-  it('stays hidden once dismissed for the session', () => {
-    expect(emailBannerState({ email: null, emailVerified: false }, true)).toBe('none')
-    expect(emailBannerState({ email: 'a@b.co', emailVerified: false }, true)).toBe('none')
+  it('explains invalid handles', () => {
+    expect(usernameError('')).toBe('사용자명을 입력해 주세요.')
+    expect(usernameError('Bad Name')).toContain('2~32자')
+    expect(usernameError('ok_name.1')).toBeNull()
+  })
+})
+
+describe('gateRedirect', () => {
+  const app = { name: 'home', requiresAuth: true }
+  const gate = { name: 'email-gate', requiresAuth: false }
+  const login = { name: 'login', requiresAuth: false }
+
+  it('sends gated users to the email gate from any app route', () => {
+    expect(gateRedirect({ emailRequired: true }, app)).toBe('/verify-email')
+    expect(gateRedirect({ emailRequired: true }, gate)).toBeNull()
+    expect(gateRedirect({ emailRequired: true }, login)).toBeNull()
+  })
+
+  it('sends verified users out of the gate and leaves everything else alone', () => {
+    expect(gateRedirect({ emailRequired: false }, gate)).toBe('/channels/@me')
+    expect(gateRedirect({ emailRequired: false }, app)).toBeNull()
+    expect(gateRedirect(null, app)).toBeNull()
   })
 })
 

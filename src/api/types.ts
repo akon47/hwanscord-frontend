@@ -25,6 +25,8 @@ export interface User {
   email?: string | null
   /** self only */
   emailVerified?: boolean
+  /** self only: true until a verified email is set — the app shows the email gate */
+  emailRequired?: boolean
 }
 
 /** GET /admin/users row */

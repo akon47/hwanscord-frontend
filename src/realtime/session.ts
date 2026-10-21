@@ -57,6 +57,15 @@ export async function startSession(router: Router): Promise<void> {
       void router.replace('/login')
       return
     }
+    if (error.message === 'email_required') {
+      // not a logout: the account needs a verified email first (the gate reconnects afterwards)
+      stopSession()
+      void auth
+        .refreshMe()
+        .catch(() => undefined)
+        .then(() => router.replace('/verify-email'))
+      return
+    }
     ui.setConnection('disconnected')
   })
 
