@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { readLinkToken } from '@/utils/linkToken'
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { authApi } from '@/api'
@@ -20,7 +21,7 @@ const continueTo = computed(() => (auth.isLoggedIn ? '/channels/@me' : '/login')
 const continueLabel = computed(() => (auth.isLoggedIn ? 'HWANSCORD 로 돌아가기' : '로그인하기'))
 
 onMounted(async () => {
-  const token = typeof route.query.token === 'string' ? route.query.token : ''
+  const token = readLinkToken(route)
   // strip the one-time token before any request goes out (it would otherwise leak via Referer and history)
   if (token) {
     window.history.replaceState(window.history.state, '', route.path)

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { readLinkToken } from '@/utils/linkToken'
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { authApi } from '@/api'
@@ -22,7 +23,7 @@ const error = ref<string | null>(null)
 const expired = ref(false)
 
 onMounted(() => {
-  token.value = typeof route.query.token === 'string' ? route.query.token : ''
+  token.value = readLinkToken(route)
   // keep the one-time token out of the history entry
   if (token.value) {
     // strip the one-time token before any request goes out (Referer, history)
