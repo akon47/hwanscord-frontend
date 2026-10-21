@@ -38,7 +38,9 @@ export const useAuthStore = defineStore('auth', {
     applyRemoteSettings(user: User) {
       const settings = useSettingsStore()
       settings.setSyncHandler((next) => {
-        void usersApi.updateMe({ settings: next as unknown as Record<string, unknown> }).catch(() => undefined)
+        void usersApi
+          .updateMe({ settings: next as unknown as Record<string, unknown> })
+          .catch(() => undefined)
       })
       settings.hydrateFromServer(user.settings)
     },
@@ -70,6 +72,44 @@ export const useAuthStore = defineStore('auth', {
       this.setSession(res.token, res.user)
       return res.user
     },
+    /** Session token handed back by the GitHub callback (fragment). */
+    async loginWithToken(token: string) {
+      this.token = token
+      setToken(token)
+      try {
+        const { user } = await authApi.fetchMe()
+        this.setSession(token, user)
+        return user
+      } catch (error) {
+        this.clearSession()
+        throw error
+      }
+    },
+    async completeGithubSignup(signupToken: string, username: string, displayName?: string) {
+      const res = await authApi.completeGithubSignup({
+        signupToken,
+        username,
+        displayName: displayName || undefined,
+      })
+      this.setSession(res.token, res.user)
+      return res.user
+    },
+    /** Starts linking GitHub to the signed-in account (full-page navigation to GitHub). */
+    async startGithubLink(next: string) {
+      const { url } = await authApi.githubLinkUrl(next)
+      window.location.assign(url)
+    },
+    async unlinkGithub() {
+      const { user } = await usersApi.unlinkGithub()
+      this.user = { ...user, settings: user.settings ?? this.user?.settings }
+      return this.user
+    },
+    /** Re-reads my profile (connections / hasPassword) from the server. */
+    async refreshMe() {
+      const { user } = await authApi.fetchMe()
+      this.user = { ...user, settings: user.settings ?? this.user?.settings }
+      return this.user
+    },
     logout() {
       useSettingsStore().setSyncHandler(null)
       this.clearSession()
@@ -85,8 +125,12 @@ export const useAuthStore = defineStore('auth', {
       this.user = { ...user, settings: user.settings ?? this.user?.settings }
       return this.user
     },
-    async changePassword(currentPassword: string, newPassword: string) {
-      await usersApi.updatePassword({ currentPassword, newPassword })
+    /** Pass `null` as currentPassword to set the first password of a GitHub-only account. */
+    async changePassword(currentPassword: string | null, newPassword: string) {
+      await usersApi.updatePassword(
+        currentPassword === null ? { newPassword } : { currentPassword, newPassword },
+      )
+      if (this.user && this.user.hasPassword === false) this.user = { ...this.user, hasPassword: true }
     },
     async uploadAvatar(file: File, onProgress?: (ratio: number) => void) {
       const { user } = await usersApi.uploadAvatar(file, onProgress).promise

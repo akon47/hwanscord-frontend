@@ -21,8 +21,13 @@ export function updateMe(body: UpdateMeBody) {
   return http.patch<{ user: User }>('/users/me', body)
 }
 
-export function updatePassword(body: { currentPassword: string; newPassword: string }) {
+/** currentPassword may be omitted only while the account has no password (hasPassword === false). */
+export function updatePassword(body: { currentPassword?: string; newPassword: string }) {
   return http.patch<void>('/users/me/password', body)
+}
+
+export function unlinkGithub() {
+  return http.delete<{ user: User }>('/users/me/oauth/github')
 }
 
 export function uploadAvatar(file: File, onProgress?: (ratio: number) => void) {

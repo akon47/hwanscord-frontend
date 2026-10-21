@@ -5,8 +5,23 @@ const router = createRouter({
   history: createWebHistory(),
   routes: [
     { path: '/', redirect: '/channels/@me' },
-    { path: '/login', name: 'login', component: () => import('@/views/LoginView.vue'), meta: { guest: true } },
-    { path: '/register', name: 'register', component: () => import('@/views/RegisterView.vue'), meta: { guest: true } },
+    {
+      path: '/login',
+      name: 'login',
+      component: () => import('@/views/LoginView.vue'),
+      meta: { guest: true },
+    },
+    {
+      path: '/oauth/callback',
+      name: 'oauth-callback',
+      component: () => import('@/views/OAuthCallbackView.vue'),
+    },
+    {
+      path: '/register',
+      name: 'register',
+      component: () => import('@/views/RegisterView.vue'),
+      meta: { guest: true },
+    },
     // legacy v1 paths
     { path: '/signin', redirect: '/login' },
     { path: '/signup', redirect: '/register' },

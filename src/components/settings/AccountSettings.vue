@@ -6,9 +6,41 @@ import { useUiStore } from '@/stores/ui'
 import { avatarColor } from '@/utils/color'
 import { formatDate } from '@/utils/time'
 import UserAvatar from '@/components/users/UserAvatar.vue'
+import { useAuthProviders } from '@/composables/useAuthProviders'
+import { readJson } from '@/utils/storage'
 
 const auth = useAuthStore()
 const ui = useUiStore()
+const providers = useAuthProviders()
+
+/** accounts created through GitHub have no password until one is set */
+const hasPassword = computed(() => auth.user?.hasPassword !== false)
+const github = computed(() => auth.user?.connections?.find((c) => c.provider === 'github') ?? null)
+const linking = ref(false)
+const unlinking = ref(false)
+
+async function linkGithub() {
+  linking.value = true
+  try {
+    await auth.startGithubLink(readJson<string>('lastPath', '/channels/@me'))
+  } catch (error) {
+    ui.toast(errorMessage(error), 'error')
+    linking.value = false
+  }
+}
+
+async function unlinkGithub() {
+  if (!hasPassword.value) return
+  unlinking.value = true
+  try {
+    await auth.unlinkGithub()
+    ui.toast('GitHub 연결을 해제했습니다.', 'success')
+  } catch (error) {
+    ui.toast(errorMessage(error), 'error')
+  } finally {
+    unlinking.value = false
+  }
+}
 
 const displayName = ref(auth.user?.displayName ?? '')
 const aboutMe = ref(auth.user?.aboutMe ?? '')
@@ -23,7 +55,9 @@ const savingPassword = ref(false)
 const passwordError = ref<string | null>(null)
 
 const dirty = computed(
-  () => displayName.value.trim() !== (auth.user?.displayName ?? '') || aboutMe.value !== (auth.user?.aboutMe ?? ''),
+  () =>
+    displayName.value.trim() !== (auth.user?.displayName ?? '') ||
+    aboutMe.value !== (auth.user?.aboutMe ?? ''),
 )
 const displayNameValid = computed(() => {
   const len = displayName.value.trim().length
@@ -31,7 +65,7 @@ const displayNameValid = computed(() => {
 })
 const passwordValid = computed(
   () =>
-    currentPassword.value.length > 0 &&
+    (!hasPassword.value || currentPassword.value.length > 0) &&
     newPassword.value.length >= 8 &&
     newPassword.value.length <= 72 &&
     newPassword.value === newPasswordRepeat.value,
@@ -92,14 +126,17 @@ async function changePassword() {
   savingPassword.value = true
   passwordError.value = null
   try {
-    await auth.changePassword(currentPassword.value, newPassword.value)
+    const firstPassword = !hasPassword.value
+    await auth.changePassword(firstPassword ? null : currentPassword.value, newPassword.value)
     currentPassword.value = ''
     newPassword.value = ''
     newPasswordRepeat.value = ''
-    ui.toast('비밀번호를 변경했습니다.', 'success')
+    ui.toast(firstPassword ? '비밀번호를 설정했습니다.' : '비밀번호를 변경했습니다.', 'success')
   } catch (error) {
     passwordError.value =
-      error instanceof ApiError && error.status === 401 ? '현재 비밀번호가 올바르지 않습니다.' : errorMessage(error)
+      error instanceof ApiError && error.status === 401
+        ? '현재 비밀번호가 올바르지 않습니다.'
+        : errorMessage(error)
   } finally {
     savingPassword.value = false
   }
@@ -120,7 +157,9 @@ async function changePassword() {
             :avatar-url="auth.user.avatarUrl"
             :size="80"
           />
-          <span v-if="avatarProgress !== null" class="avatar-progress">{{ Math.round(avatarProgress * 100) }}%</span>
+          <span v-if="avatarProgress !== null" class="avatar-progress"
+            >{{ Math.round(avatarProgress * 100) }}%</span
+          >
         </div>
         <div class="profile-name">
           <strong>{{ auth.user.displayName }}</strong>
@@ -134,10 +173,17 @@ async function changePassword() {
             class="visually-hidden"
             @change="onAvatarChosen"
           />
-          <button type="button" class="btn btn-primary btn-sm" :disabled="avatarProgress !== null" @click="fileInput?.click()">
+          <button
+            type="button"
+            class="btn btn-primary btn-sm"
+            :disabled="avatarProgress !== null"
+            @click="fileInput?.click()"
+          >
             아바타 변경
           </button>
-          <button v-if="auth.user.avatarUrl" type="button" class="btn btn-ghost btn-sm" @click="removeAvatar">제거</button>
+          <button v-if="auth.user.avatarUrl" type="button" class="btn btn-ghost btn-sm" @click="removeAvatar">
+            제거
+          </button>
         </div>
       </div>
 
@@ -153,21 +199,71 @@ async function changePassword() {
         </label>
         <label class="field">
           <span class="label">내 소개</span>
-          <textarea v-model="aboutMe" class="input" rows="3" maxlength="190" placeholder="자신을 소개해 주세요" />
+          <textarea
+            v-model="aboutMe"
+            class="input"
+            rows="3"
+            maxlength="190"
+            placeholder="자신을 소개해 주세요"
+          />
           <span class="counter">{{ 190 - aboutMe.length }}</span>
         </label>
         <p class="text-muted since">가입일: {{ formatDate(auth.user.createdAt) }}</p>
         <div v-if="dirty" class="save-bar">
           <span>저장하지 않은 변경 사항이 있어요!</span>
           <button type="button" class="btn btn-ghost btn-sm" @click="resetProfile">재설정</button>
-          <button type="submit" class="btn btn-primary btn-sm" :disabled="savingProfile || !displayNameValid">변경 사항 저장</button>
+          <button type="submit" class="btn btn-primary btn-sm" :disabled="savingProfile || !displayNameValid">
+            변경 사항 저장
+          </button>
         </div>
       </form>
     </div>
 
-    <h3 class="subtitle">비밀번호 변경</h3>
+    <h3 class="subtitle">연결된 계정</h3>
+    <div class="connection">
+      <svg class="gh-mark" viewBox="0 0 16 16" width="28" height="28" aria-hidden="true">
+        <path
+          fill="currentColor"
+          d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"
+        />
+      </svg>
+      <div class="connection-info">
+        <strong>GitHub</strong>
+        <span v-if="github" class="text-muted">{{ github.login }}</span>
+        <span v-else class="text-muted">연결되지 않음</span>
+      </div>
+      <template v-if="github">
+        <button
+          type="button"
+          class="btn btn-ghost btn-sm"
+          :disabled="!hasPassword || unlinking"
+          :title="hasPassword ? undefined : '비밀번호를 먼저 설정해야 해제할 수 있어요.'"
+          @click="unlinkGithub"
+        >
+          연결 해제
+        </button>
+      </template>
+      <button
+        v-else-if="providers.github"
+        type="button"
+        class="btn btn-secondary btn-sm"
+        :disabled="linking"
+        @click="linkGithub"
+      >
+        {{ linking ? '이동 중…' : '연결' }}
+      </button>
+      <span v-else class="text-muted unavailable">사용할 수 없음</span>
+    </div>
+    <p v-if="github && !hasPassword" class="text-muted note">
+      GitHub 가 유일한 로그인 수단이라 해제할 수 없어요. 아래에서 비밀번호를 설정하면 해제할 수 있어요.
+    </p>
+
+    <h3 class="subtitle">{{ hasPassword ? '비밀번호 변경' : '비밀번호 설정' }}</h3>
+    <p v-if="!hasPassword" class="text-muted note">
+      비밀번호를 설정하면 아이디와 비밀번호로도 로그인할 수 있어요.
+    </p>
     <form class="fields password" @submit.prevent="changePassword">
-      <label class="field">
+      <label v-if="hasPassword" class="field">
         <span class="label">현재 비밀번호</span>
         <input v-model="currentPassword" class="input" type="password" autocomplete="current-password" />
       </label>
@@ -179,11 +275,15 @@ async function changePassword() {
       <label class="field">
         <span class="label">새 비밀번호 확인</span>
         <input v-model="newPasswordRepeat" class="input" type="password" autocomplete="new-password" />
-        <span v-if="newPasswordRepeat && newPassword !== newPasswordRepeat" class="field-error">비밀번호가 일치하지 않아요.</span>
+        <span v-if="newPasswordRepeat && newPassword !== newPasswordRepeat" class="field-error"
+          >비밀번호가 일치하지 않아요.</span
+        >
       </label>
       <p v-if="passwordError" class="field-error">{{ passwordError }}</p>
       <div>
-        <button type="submit" class="btn btn-primary" :disabled="!passwordValid || savingPassword">비밀번호 변경</button>
+        <button type="submit" class="btn btn-primary" :disabled="!passwordValid || savingPassword">
+          {{ hasPassword ? '비밀번호 변경' : '비밀번호 설정' }}
+        </button>
       </div>
     </form>
   </section>
@@ -305,6 +405,40 @@ textarea.input {
 .save-bar span {
   flex: 1;
   font-weight: 500;
+}
+
+.connection {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 520px;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  background: var(--bg-tertiary);
+}
+
+.gh-mark {
+  flex-shrink: 0;
+  color: var(--header-primary);
+}
+
+.connection-info {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  color: var(--header-primary);
+}
+
+.unavailable {
+  font-size: var(--font-size-sm);
+}
+
+.note {
+  max-width: 520px;
+  margin-top: 8px;
+  margin-bottom: 12px;
+  font-size: var(--font-size-sm);
 }
 
 @media (max-width: 599px) {

@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ApiError, errorMessage } from '@/api/client'
 import { useAuthStore } from '@/stores/auth'
+import GithubButton from '@/components/auth/GithubButton.vue'
 import AuthLayout from './AuthLayout.vue'
 
 const auth = useAuthStore()
@@ -64,12 +65,26 @@ async function submit() {
     <form class="form" novalidate @submit.prevent="submit">
       <label class="field">
         <span class="label">아이디 <span class="required">*</span></span>
-        <input v-model="username" class="input" type="text" autocomplete="username" autocapitalize="off" autofocus required />
+        <input
+          v-model="username"
+          class="input"
+          type="text"
+          autocomplete="username"
+          autocapitalize="off"
+          autofocus
+          required
+        />
         <span v-if="usernameError" class="field-error">{{ usernameError }}</span>
       </label>
       <label class="field">
         <span class="label">별명</span>
-        <input v-model="displayName" class="input" type="text" maxlength="32" placeholder="다른 사람에게 표시되는 이름 (선택)" />
+        <input
+          v-model="displayName"
+          class="input"
+          type="text"
+          maxlength="32"
+          placeholder="다른 사람에게 표시되는 이름 (선택)"
+        />
       </label>
       <label class="field">
         <span class="label">비밀번호 <span class="required">*</span></span>
@@ -85,6 +100,7 @@ async function submit() {
       <button type="submit" class="btn btn-primary btn-lg submit" :disabled="!valid || loading">
         {{ loading ? '가입 중…' : '계속하기' }}
       </button>
+      <GithubButton next="/channels/@me" />
       <p class="switch"><RouterLink to="/login">이미 계정이 있으신가요?</RouterLink></p>
     </form>
   </AuthLayout>

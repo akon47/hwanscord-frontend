@@ -17,6 +17,19 @@ export interface User {
   aboutMe: string | null
   createdAt: string
   settings?: Record<string, unknown>
+  /** self only: false for GitHub-created accounts that never set a password */
+  hasPassword?: boolean
+  /** self only: linked OAuth identities */
+  connections?: OAuthConnection[]
+}
+
+export interface OAuthConnection {
+  provider: 'github'
+  login: string
+}
+
+export interface AuthProviders {
+  github: boolean
 }
 
 export interface UserRef {
@@ -144,8 +157,7 @@ export interface ApiErrorBody {
 }
 
 export type SocketAck<T = unknown> =
-  | { ok: true; data?: T }
-  | { ok: false; error: { code: string; message: string } }
+  { ok: true; data?: T } | { ok: false; error: { code: string; message: string } }
 
 /** Server → client events (API.md). */
 export interface ServerEvents {
@@ -179,7 +191,12 @@ export interface ClientEvents {
     ack?: (r: SocketAck) => void,
   ) => void
   'rtc:signal': (
-    p: { to: string; scope: SignalScope; type: SignalType; payload: RTCSessionDescriptionInit | RTCIceCandidateInit },
+    p: {
+      to: string
+      scope: SignalScope
+      type: SignalType
+      payload: RTCSessionDescriptionInit | RTCIceCandidateInit
+    },
     ack?: (r: SocketAck) => void,
   ) => void
   'screen:watch': (p: { to: string }, ack?: (r: SocketAck) => void) => void

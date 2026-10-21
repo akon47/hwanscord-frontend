@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { errorMessage } from '@/api/client'
 import { useAuthStore } from '@/stores/auth'
 import { readJson } from '@/utils/storage'
+import GithubButton from '@/components/auth/GithubButton.vue'
 import AuthLayout from './AuthLayout.vue'
 
 const auth = useAuthStore()
@@ -14,6 +15,12 @@ const username = ref('')
 const password = ref('')
 const loading = ref(false)
 const error = ref<string | null>(null)
+
+const nextPath = computed(() =>
+  typeof route.query.redirect === 'string'
+    ? route.query.redirect
+    : readJson<string>('lastPath', '/channels/@me'),
+)
 
 const valid = computed(() => username.value.trim().length > 0 && password.value.length > 0)
 
@@ -39,7 +46,15 @@ async function submit() {
     <form class="form" novalidate @submit.prevent="submit">
       <label class="field">
         <span class="label">아이디 <span class="required">*</span></span>
-        <input v-model="username" class="input" type="text" autocomplete="username" autocapitalize="off" autofocus required />
+        <input
+          v-model="username"
+          class="input"
+          type="text"
+          autocomplete="username"
+          autocapitalize="off"
+          autofocus
+          required
+        />
       </label>
       <label class="field">
         <span class="label">비밀번호 <span class="required">*</span></span>
@@ -49,9 +64,8 @@ async function submit() {
       <button type="submit" class="btn btn-primary btn-lg submit" :disabled="!valid || loading">
         {{ loading ? '로그인 중…' : '로그인' }}
       </button>
-      <p class="switch">
-        계정이 필요한가요? <RouterLink to="/register">가입하기</RouterLink>
-      </p>
+      <GithubButton :next="nextPath" />
+      <p class="switch">계정이 필요한가요? <RouterLink to="/register">가입하기</RouterLink></p>
     </form>
   </AuthLayout>
 </template>
