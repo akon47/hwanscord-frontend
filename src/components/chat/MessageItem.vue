@@ -327,6 +327,7 @@ function onMore(event: MouseEvent) {
 }
 
 .gutter {
+  position: relative;
   width: 56px;
   flex-shrink: 0;
   display: flex;
@@ -339,19 +340,25 @@ function onMore(event: MouseEvent) {
   border-radius: 50%;
 }
 
+/* Out of the layout flow and toggled with visibility, so revealing it on hover can never change
+   the row height (it used to switch display:none→block and push the following messages down). */
 .side-time {
-  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 56px;
-  padding-top: 4px;
   font-size: 0.6875rem;
   line-height: 1.375rem;
   color: var(--text-faint);
   text-align: left;
   white-space: nowrap;
+  visibility: hidden;
+  pointer-events: none;
 }
 
-.message.is-grouped:hover .side-time {
-  display: block;
+.message.is-grouped:hover .side-time,
+.message.is-grouped:focus-within .side-time {
+  visibility: visible;
 }
 
 .body {
